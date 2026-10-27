@@ -20,6 +20,25 @@ export interface AuthUserProfile {
 
 const LOCAL_USER_KEY = 'aurabim_auth_user';
 
+function getLocalItem(key: string): string | null {
+  if (typeof localStorage !== 'undefined') {
+    return localStorage.getItem(key);
+  }
+  return null;
+}
+
+function setLocalItem(key: string, value: string): void {
+  if (typeof localStorage !== 'undefined') {
+    localStorage.setItem(key, value);
+  }
+}
+
+function removeLocalItem(key: string): void {
+  if (typeof localStorage !== 'undefined') {
+    localStorage.removeItem(key);
+  }
+}
+
 class AuthService {
   private currentUser: AuthUserProfile | null = null;
   private listeners: Set<(user: AuthUserProfile | null) => void> = new Set();
@@ -31,7 +50,7 @@ class AuthService {
 
   private init() {
     // 1. Check local session storage first for instant dashboard rendering
-    const cached = localStorage.getItem(LOCAL_USER_KEY);
+    const cached = getLocalItem(LOCAL_USER_KEY);
     if (cached) {
       try {
         this.currentUser = JSON.parse(cached);
@@ -51,10 +70,10 @@ class AuthService {
             photoURL: fbUser.photoURL,
             isGuest: false
           };
-          localStorage.setItem(LOCAL_USER_KEY, JSON.stringify(this.currentUser));
+          setLocalItem(LOCAL_USER_KEY, JSON.stringify(this.currentUser));
         } else if (!this.currentUser?.isGuest) {
           this.currentUser = null;
-          localStorage.removeItem(LOCAL_USER_KEY);
+          removeLocalItem(LOCAL_USER_KEY);
         }
         this.isInitialized = true;
         this.notify();
@@ -94,7 +113,7 @@ class AuthService {
         isGuest: false
       };
       this.currentUser = user;
-      localStorage.setItem(LOCAL_USER_KEY, JSON.stringify(user));
+      setLocalItem(LOCAL_USER_KEY, JSON.stringify(user));
       this.notify();
       return user;
     }
@@ -108,7 +127,7 @@ class AuthService {
       isGuest: false
     };
     this.currentUser = user;
-    localStorage.setItem(LOCAL_USER_KEY, JSON.stringify(user));
+    setLocalItem(LOCAL_USER_KEY, JSON.stringify(user));
     this.notify();
     return user;
   }
@@ -127,7 +146,7 @@ class AuthService {
         isGuest: false
       };
       this.currentUser = user;
-      localStorage.setItem(LOCAL_USER_KEY, JSON.stringify(user));
+      setLocalItem(LOCAL_USER_KEY, JSON.stringify(user));
       this.notify();
       return user;
     }
@@ -141,7 +160,7 @@ class AuthService {
       isGuest: false
     };
     this.currentUser = user;
-    localStorage.setItem(LOCAL_USER_KEY, JSON.stringify(user));
+    setLocalItem(LOCAL_USER_KEY, JSON.stringify(user));
     this.notify();
     return user;
   }
@@ -158,7 +177,7 @@ class AuthService {
         isGuest: false
       };
       this.currentUser = user;
-      localStorage.setItem(LOCAL_USER_KEY, JSON.stringify(user));
+      setLocalItem(LOCAL_USER_KEY, JSON.stringify(user));
       this.notify();
       return user;
     }
@@ -176,7 +195,7 @@ class AuthService {
       isGuest: true
     };
     this.currentUser = user;
-    localStorage.setItem(LOCAL_USER_KEY, JSON.stringify(user));
+    setLocalItem(LOCAL_USER_KEY, JSON.stringify(user));
     this.notify();
     return user;
   }
@@ -190,7 +209,7 @@ class AuthService {
       }
     }
     this.currentUser = null;
-    localStorage.removeItem(LOCAL_USER_KEY);
+    removeLocalItem(LOCAL_USER_KEY);
     this.notify();
   }
 }
