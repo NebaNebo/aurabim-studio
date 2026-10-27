@@ -36,20 +36,45 @@ describe('Auth Service & Authentication Flow', () => {
     unsub();
   });
 
-  it('signs in with email and password fallback', async () => {
-    const user = await authService.signInWithEmail('architect@aurabim.com', 'secret123');
-    expect(user.email).toBe('architect@aurabim.com');
-    expect(user.isGuest).toBe(false);
-    expect(user.displayName).toBe('architect');
-    expect(authService.getCurrentUser()?.uid).toBe(user.uid);
-  });
-
   it('creates an account with email, password, and full name', async () => {
     const user = await authService.signUpWithEmail('lecorbusier@aurabim.com', 'pass12345', 'Le Corbusier');
     expect(user.email).toBe('lecorbusier@aurabim.com');
     expect(user.displayName).toBe('Le Corbusier');
     expect(user.isGuest).toBe(false);
     expect(authService.getCurrentUser()?.displayName).toBe('Le Corbusier');
+  });
+
+  it('rejects duplicate sign-up with an existing email', async () => {
+    await authService.signUpWithEmail('unique@aurabim.com', 'securepass', 'Original User');
+    await expect(
+      authService.signUpWithEmail('unique@aurabim.com', 'anotherpass', 'Duplicate User')
+    ).rejects.toThrow(/already exists/i);
+  });
+
+  it('rejects sign-in for unregistered email addresses', async () => {
+    await expect(
+      authService.signInWithEmail('nonexistent@randomdomain.com', 'anyPassword123')
+    ).rejects.toThrow(/No account found with email/i);
+  });
+
+  it('rejects sign-in when an incorrect password is provided', async () => {
+    await authService.signUpWithEmail('client@aurabim.com', 'correctPassword123', 'Client');
+    await authService.signOut();
+
+    await expect(
+      authService.signInWithEmail('client@aurabim.com', 'wrongPasswordXYZ')
+    ).rejects.toThrow(/Incorrect password/i);
+  });
+
+  it('signs in successfully with matching email and password', async () => {
+    await authService.signUpWithEmail('designer@aurabim.com', 'validPass999', 'Elena Vance');
+    await authService.signOut();
+
+    const signedIn = await authService.signInWithEmail('designer@aurabim.com', 'validPass999');
+    expect(signedIn.email).toBe('designer@aurabim.com');
+    expect(signedIn.displayName).toBe('Elena Vance');
+    expect(signedIn.isGuest).toBe(false);
+    expect(authService.getCurrentUser()?.uid).toBe(signedIn.uid);
   });
 
   it('signs in with Google account identity and persists user profile', async () => {

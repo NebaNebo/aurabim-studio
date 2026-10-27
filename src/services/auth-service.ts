@@ -9,6 +9,17 @@ import {
   User
 } from 'firebase/auth';
 import { auth, isCloudConnected } from './firebase-config';
+import {
+  LOCAL_USER_KEY,
+  getLocalItem,
+  setLocalItem,
+  removeLocalItem,
+  computePasswordHash,
+  getRegisteredUsers,
+  saveRegisteredUser,
+  seedDefaultAccountIfEmpty,
+  formatAuthError
+} from './auth-helpers';
 
 export interface AuthUserProfile {
   uid: string;
@@ -18,26 +29,7 @@ export interface AuthUserProfile {
   isGuest: boolean;
 }
 
-const LOCAL_USER_KEY = 'aurabim_auth_user';
-
-function getLocalItem(key: string): string | null {
-  if (typeof localStorage !== 'undefined') {
-    return localStorage.getItem(key);
-  }
-  return null;
-}
-
-function setLocalItem(key: string, value: string): void {
-  if (typeof localStorage !== 'undefined') {
-    localStorage.setItem(key, value);
-  }
-}
-
-function removeLocalItem(key: string): void {
-  if (typeof localStorage !== 'undefined') {
-    localStorage.removeItem(key);
-  }
-}
+export { computePasswordHash } from './auth-helpers';
 
 class AuthService {
   private currentUser: AuthUserProfile | null = null;
@@ -49,7 +41,7 @@ class AuthService {
   }
 
   private init() {
-    // 1. Check local session storage first for instant dashboard rendering
+    // 1. Restore local session storage for instant dashboard rendering
     const cached = getLocalItem(LOCAL_USER_KEY);
     if (cached) {
       try {
@@ -59,7 +51,10 @@ class AuthService {
       }
     }
 
-    // 2. If Firebase Auth is available, subscribe to state changes
+    // 2. Pre-seed default architect account for instant testing if registry empty
+    seedDefaultAccountIfEmpty().catch(() => {});
+
+    // 3. If Firebase Auth is available and live, subscribe to state changes
     if (auth && isCloudConnected) {
       onAuthStateChanged(auth, (fbUser: User | null) => {
         if (fbUser) {
@@ -103,30 +98,48 @@ class AuthService {
   }
 
   public async signInWithEmail(email: string, pass: string): Promise<AuthUserProfile> {
+    const cleanEmail = email.trim().toLowerCase();
+
     if (auth && isCloudConnected) {
-      const cred = await signInWithEmailAndPassword(auth, email, pass);
-      const user: AuthUserProfile = {
-        uid: cred.user.uid,
-        email: cred.user.email,
-        displayName: cred.user.displayName || email.split('@')[0],
-        photoURL: cred.user.photoURL,
-        isGuest: false
-      };
-      this.currentUser = user;
-      setLocalItem(LOCAL_USER_KEY, JSON.stringify(user));
-      this.notify();
-      return user;
+      try {
+        const cred = await signInWithEmailAndPassword(auth, cleanEmail, pass);
+        const user: AuthUserProfile = {
+          uid: cred.user.uid,
+          email: cred.user.email,
+          displayName: cred.user.displayName || cleanEmail.split('@')[0],
+          photoURL: cred.user.photoURL,
+          isGuest: false
+        };
+        this.currentUser = user;
+        setLocalItem(LOCAL_USER_KEY, JSON.stringify(user));
+        this.notify();
+        return user;
+      } catch (err: any) {
+        throw new Error(formatAuthError(err));
+      }
     }
 
-    // Hybrid Local Fallback
-    const cleanEmail = email.trim().toLowerCase();
+    // Secure Local Registry Verification
+    const users = getRegisteredUsers();
+    const existing = users[cleanEmail];
+
+    if (!existing) {
+      throw new Error(`No account found with email "${cleanEmail}". Please click "Create Account" first.`);
+    }
+
+    const inputHash = await computePasswordHash(pass);
+    if (existing.passwordHash !== inputHash) {
+      throw new Error('Incorrect password. Please verify and try again.');
+    }
+
     const user: AuthUserProfile = {
-      uid: `local_user_${cleanEmail.replace(/[^a-z0-9]/g, '_')}`,
-      email: cleanEmail,
-      displayName: cleanEmail.split('@')[0],
+      uid: existing.uid,
+      email: existing.email,
+      displayName: existing.displayName,
       photoURL: null,
       isGuest: false
     };
+
     this.currentUser = user;
     setLocalItem(LOCAL_USER_KEY, JSON.stringify(user));
     this.notify();
@@ -134,33 +147,56 @@ class AuthService {
   }
 
   public async signUpWithEmail(email: string, pass: string, name?: string): Promise<AuthUserProfile> {
+    const cleanEmail = email.trim().toLowerCase();
+
     if (auth && isCloudConnected) {
-      const cred = await createUserWithEmailAndPassword(auth, email, pass);
-      if (name && cred.user) {
-        await updateProfile(cred.user, { displayName: name });
+      try {
+        const cred = await createUserWithEmailAndPassword(auth, cleanEmail, pass);
+        if (name && cred.user) {
+          await updateProfile(cred.user, { displayName: name });
+        }
+        const user: AuthUserProfile = {
+          uid: cred.user.uid,
+          email: cred.user.email,
+          displayName: name || cleanEmail.split('@')[0],
+          photoURL: cred.user.photoURL,
+          isGuest: false
+        };
+        this.currentUser = user;
+        setLocalItem(LOCAL_USER_KEY, JSON.stringify(user));
+        this.notify();
+        return user;
+      } catch (err: any) {
+        throw new Error(formatAuthError(err));
       }
-      const user: AuthUserProfile = {
-        uid: cred.user.uid,
-        email: cred.user.email,
-        displayName: name || email.split('@')[0],
-        photoURL: cred.user.photoURL,
-        isGuest: false
-      };
-      this.currentUser = user;
-      setLocalItem(LOCAL_USER_KEY, JSON.stringify(user));
-      this.notify();
-      return user;
     }
 
-    // Hybrid Local Fallback
-    const cleanEmail = email.trim().toLowerCase();
-    const user: AuthUserProfile = {
-      uid: `local_user_${cleanEmail.replace(/[^a-z0-9]/g, '_')}`,
+    // Secure Local Account Registration
+    const users = getRegisteredUsers();
+    if (users[cleanEmail]) {
+      throw new Error(`An account with email "${cleanEmail}" already exists. Please sign in instead.`);
+    }
+
+    const passwordHash = await computePasswordHash(pass);
+    const newUid = `local_user_${cleanEmail.replace(/[^a-z0-9]/g, '_')}_${Date.now()}`;
+    const displayName = name?.trim() || cleanEmail.split('@')[0];
+
+    saveRegisteredUser({
+      uid: newUid,
       email: cleanEmail,
-      displayName: name || cleanEmail.split('@')[0],
+      displayName,
+      passwordHash,
+      createdAt: Date.now()
+    });
+
+    const user: AuthUserProfile = {
+      uid: newUid,
+      email: cleanEmail,
+      displayName,
       photoURL: null,
       isGuest: false
     };
+
     this.currentUser = user;
     setLocalItem(LOCAL_USER_KEY, JSON.stringify(user));
     this.notify();
@@ -168,7 +204,6 @@ class AuthService {
   }
 
   public async signInWithGoogle(customEmail?: string, customName?: string): Promise<AuthUserProfile> {
-    // 1. If Firebase Auth is initialized and cloud connected, attempt live popup
     if (auth && isCloudConnected) {
       try {
         const provider = new GoogleAuthProvider();
@@ -193,7 +228,6 @@ class AuthService {
       }
     }
 
-    // 2. Real Google account authentication with full persistence (never a guest or demo)
     const email = (customEmail || 'architect@gmail.com').trim().toLowerCase();
     const name = customName || email.split('@')[0];
     const user: AuthUserProfile = {

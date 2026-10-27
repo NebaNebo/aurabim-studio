@@ -187,13 +187,45 @@ export class AuthModal {
         this.hide();
         this.onAuthSuccessCallback?.(user);
       } catch (err: any) {
-        showToast(err.message || 'Authentication error', 4000);
+        const errorMsg = err?.message || 'Authentication error';
+        const lower = errorMsg.toLowerCase();
+
+        if (lower.includes('password')) {
+          if (errPass) errPass.textContent = errorMsg;
+          passInput?.classList.add('has-error');
+          passInput?.focus();
+        } else if (lower.includes('email') || lower.includes('account')) {
+          if (errEmail) errEmail.textContent = errorMsg;
+          emailInput?.classList.add('has-error');
+          emailInput?.focus();
+        }
+
+        showToast(errorMsg, 4500);
       } finally {
         if (submitBtn) {
           submitBtn.disabled = false;
           submitBtn.innerHTML = `<span>${this.activeTab === 'signin' ? 'Sign In to Workspace' : 'Create Account & Open Studio'}</span><span>→</span>`;
         }
       }
+    });
+
+    const emailEl = this.container.querySelector('#auth-email') as HTMLInputElement | null;
+    const passEl = this.container.querySelector('#auth-password') as HTMLInputElement | null;
+    const nameEl = this.container.querySelector('#auth-name') as HTMLInputElement | null;
+    emailEl?.addEventListener('input', () => {
+      emailEl.classList.remove('has-error');
+      const err = this.container.querySelector('#err-auth-email');
+      if (err) err.textContent = '';
+    });
+    passEl?.addEventListener('input', () => {
+      passEl.classList.remove('has-error');
+      const err = this.container.querySelector('#err-auth-password');
+      if (err) err.textContent = '';
+    });
+    nameEl?.addEventListener('input', () => {
+      nameEl.classList.remove('has-error');
+      const err = this.container.querySelector('#err-auth-name');
+      if (err) err.textContent = '';
     });
 
     this.container.querySelector('#btn-google-auth')?.addEventListener('click', async () => {
