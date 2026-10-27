@@ -71,7 +71,7 @@ class AuthService {
             isGuest: false
           };
           setLocalItem(LOCAL_USER_KEY, JSON.stringify(this.currentUser));
-        } else if (!this.currentUser?.isGuest) {
+        } else if (this.currentUser && !this.currentUser.isGuest && !this.currentUser.uid.startsWith('local_') && !this.currentUser.uid.startsWith('guest_')) {
           this.currentUser = null;
           removeLocalItem(LOCAL_USER_KEY);
         }

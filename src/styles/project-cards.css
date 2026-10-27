@@ -1,6 +1,6 @@
 /* ==========================================================================
    AuraBIM Studio — Project Cards & Grid (Apple HIG & UI-UX Pro Max)
-   Fluid hover transitions, Liquid Glass badges, & accessible popover actions
+   Unclipped dropdown popovers, card hover overlay, & selection checkboxes
    ========================================================================== */
 
 .dash-projects-grid {
@@ -13,25 +13,39 @@
   background: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: var(--radius-lg, 16px);
-  overflow: hidden;
+  overflow: visible; /* Prevents dropdown menu clipping */
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
   transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
   position: relative;
   display: flex;
   flex-direction: column;
+  cursor: pointer;
 }
 
 .dash-project-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 14px 32px rgba(0, 0, 0, 0.09), 0 2px 6px rgba(0, 0, 0, 0.04);
   border-color: #cbd5e1;
+  z-index: 10;
 }
 
+.dash-project-card.menu-open {
+  z-index: 50;
+  border-color: #0071e3;
+}
+
+.dash-project-card.is-selected {
+  border-color: #1b4d3e;
+  box-shadow: 0 0 0 2.5px rgba(27, 77, 62, 0.35);
+}
+
+/* Thumbnail with top corner clipping */
 .card-thumb-area {
   height: 180px;
   background: #f1f3f6;
   position: relative;
   overflow: hidden;
+  border-radius: 15px 15px 0 0;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -47,6 +61,92 @@
 
 .dash-project-card:hover .card-thumb-img {
   transform: scale(1.04);
+}
+
+/* Hover "Open in Studio →" Overlay */
+.card-thumb-hover-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.25);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  z-index: 6;
+}
+
+.card-thumb-hover-overlay span {
+  background: rgba(255, 255, 255, 0.96);
+  color: #1b4d3e;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 8px 16px;
+  border-radius: 9999px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.16);
+  transform: translateY(4px);
+  transition: transform 0.2s ease;
+  letter-spacing: -0.01em;
+}
+
+.dash-project-card:hover .card-thumb-hover-overlay {
+  opacity: 1;
+}
+
+.dash-project-card:hover .card-thumb-hover-overlay span {
+  transform: translateY(0);
+}
+
+/* Card Selection Checkbox (Top-Left) */
+.card-select-label {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 9;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+
+.dash-project-card:hover .card-select-label,
+.card-select-label.has-selection {
+  opacity: 1;
+}
+
+.card-select-checkbox {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.card-checkbox-custom {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1.5px solid #cbd5e1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  transition: all 0.15s ease;
+}
+
+.card-select-checkbox:checked + .card-checkbox-custom {
+  background: #1b4d3e;
+  border-color: #1b4d3e;
+}
+
+.card-select-checkbox:checked + .card-checkbox-custom::after {
+  content: '✓';
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 800;
 }
 
 .card-thumb-fallback {
@@ -100,6 +200,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  position: relative;
 }
 
 .card-title {
@@ -112,10 +213,23 @@
   text-overflow: ellipsis;
   cursor: pointer;
   transition: color 0.15s ease;
+  flex: 1;
+  padding-right: 8px;
 }
 
 .card-title:hover {
   color: #0071e3;
+}
+
+.card-title-input {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1d1d1f;
+  border: 1px solid #0071e3;
+  border-radius: 6px;
+  padding: 2px 6px;
+  outline: none;
+  width: 100%;
 }
 
 .card-action-btn {
@@ -131,6 +245,7 @@
   justify-content: center;
   border-radius: 6px;
   transition: all 0.15s ease;
+  flex-shrink: 0;
 }
 
 .card-action-btn:hover {
@@ -156,22 +271,22 @@
   border-radius: 4px;
 }
 
-/* Apple Floating Popover Menu */
+/* Apple Floating Popover Menu (Unclipped & High z-index) */
 .card-dropdown-menu {
   position: absolute;
-  top: 195px;
-  right: 14px;
-  background: rgba(255, 255, 255, 0.96);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border: 1px solid rgba(226, 232, 240, 0.9);
+  top: 36px;
+  right: 0;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(28px) saturate(190%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  border: 1px solid rgba(226, 232, 240, 0.95);
   border-radius: 12px;
-  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.14), 0 2px 6px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.16), 0 3px 10px rgba(0, 0, 0, 0.05);
   padding: 6px;
   flex-direction: column;
   gap: 2px;
-  z-index: 40;
-  min-width: 154px;
+  z-index: 100;
+  min-width: 160px;
   animation: dropdownIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
 

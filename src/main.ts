@@ -114,8 +114,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         router.navigateTo('dashboard');
         dashboardView.refresh();
       }
-    } else {
-      router.navigateTo('auth');
+    } else if (router.getCurrentView() === 'auth') {
       authModal.show('signin');
     }
   });
