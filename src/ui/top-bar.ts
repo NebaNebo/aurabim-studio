@@ -1,23 +1,27 @@
 import { projectStore } from '../core/state-store';
-import { 
-  createCoohomCurvedShowcaseTemplate,
-  createModernStudioTemplate, 
-  createTwoBedroomSuiteTemplate, 
-  createBlankCanvasTemplate 
-} from '../core/templates';
 import { showToast } from './toast-notifier';
 import { ThreeSceneManager } from '../webgl3d/three-scene';
 import { CadViewport } from '../cad2d/cad-viewport';
+import { openShortcutsModal } from './shortcuts-modal';
+import { openTemplateModal } from './template-picker-modal';
+import { autoSaveManager, AutoSaveStatus } from '../services/auto-save-manager';
 
 export class TopBarController {
   private container: HTMLElement;
   private threeScene: ThreeSceneManager;
   private cadViewport: CadViewport;
+  private onBackToDashboard?: () => void;
 
-  constructor(container: HTMLElement, threeScene: ThreeSceneManager, cadViewport: CadViewport) {
+  constructor(
+    container: HTMLElement,
+    threeScene: ThreeSceneManager,
+    cadViewport: CadViewport,
+    onBackToDashboard?: () => void
+  ) {
     this.container = container;
     this.threeScene = threeScene;
     this.cadViewport = cadViewport;
+    this.onBackToDashboard = onBackToDashboard;
 
     // Pointer Event Isolation: Stop propagation so top-bar clicks never trigger canvas drawing
     const stopEvents = ['pointerdown', 'mousedown', 'touchstart', 'click', 'dblclick', 'wheel'];
@@ -31,18 +35,49 @@ export class TopBarController {
     projectStore.subscribe(state => {
       this.updateActiveStates(state.viewMode, state.name);
     });
+
+    // Real-time Auto-Save Status listener
+    autoSaveManager.onStatusChange((status: AutoSaveStatus) => {
+      const badge = this.container.querySelector('#top-autosave-badge');
+      const text = this.container.querySelector('#top-autosave-text');
+      const dot = this.container.querySelector('.studio-status-dot') as HTMLElement | null;
+
+      if (!badge || !text) return;
+
+      if (status === 'saving') {
+        text.textContent = 'Saving...';
+        if (dot) dot.style.backgroundColor = '#f59e0b';
+        badge.classList.add('saving');
+      } else if (status === 'saved') {
+        text.textContent = 'Cloud Synced';
+        if (dot) dot.style.backgroundColor = '#10b981';
+        badge.classList.remove('saving');
+      } else if (status === 'error') {
+        text.textContent = 'Local (Offline)';
+        if (dot) dot.style.backgroundColor = '#94a3b8';
+        badge.classList.remove('saving');
+      } else {
+        text.textContent = 'Saved';
+        if (dot) dot.style.backgroundColor = '#10b981';
+      }
+    });
   }
 
   private render() {
     const currentState = projectStore.getState();
     this.container.innerHTML = `
       <div class="top-bar-section">
+        <button class="btn btn-sm btn-ghost" id="btn-back-dashboard" title="Return to Projects Dashboard">
+          <span style="font-size: 13px;">←</span>
+          <span>Dashboard</span>
+        </button>
+
         <div class="studio-brand">
           <span class="studio-logo-icon">🏛️</span>
           <span class="studio-logo-name">AuraBIM</span>
-          <span class="studio-status-badge">
+          <span class="studio-status-badge" id="top-autosave-badge">
             <span class="studio-status-dot"></span>
-            <span>Saved</span>
+            <span id="top-autosave-text">Saved</span>
           </span>
         </div>
 
@@ -82,6 +117,14 @@ export class TopBarController {
   }
 
   private bindEvents() {
+    // Back to Dashboard with immediate auto-save
+    this.container.querySelector('#btn-back-dashboard')?.addEventListener('click', async () => {
+      await autoSaveManager.forceSaveNow();
+      if (this.onBackToDashboard) {
+        this.onBackToDashboard();
+      }
+    });
+
     // Project title rename
     const titleInput = this.container.querySelector('#input-project-title') as HTMLInputElement;
     titleInput?.addEventListener('change', () => {
@@ -221,144 +264,11 @@ export class TopBarController {
   }
 
   private openTemplateModal() {
-    const overlay = document.createElement('div');
-    overlay.className = 'modal-overlay open';
-    overlay.innerHTML = `
-      <div class="modal-box">
-        <div class="modal-header">
-          <span class="modal-title">Select Architectural Template</span>
-          <button class="btn btn-sm btn-icon" id="modal-close">✕</button>
-        </div>
-        <div class="modal-body">
-          <div class="catalog-item-card" id="tmpl-curved" style="padding: 14px; border: 1.5px solid var(--accent-blue); background: #f0f7ff;">
-            <div class="catalog-item-icon" style="font-size: 26px; width: 48px; height: 48px;">🏢</div>
-            <div class="catalog-item-info">
-              <span class="catalog-item-name" style="font-size: 13.5px; font-weight: 700; color: #1e40af;">Curved Penthouse Suite (Coohom)</span>
-              <span class="catalog-item-dim" style="font-size: 11px;">180.6 m² Curved Wing + 3 Suites • Arc Wall, Partition Dividers & Openings</span>
-            </div>
-          </div>
-
-          <div class="catalog-item-card" id="tmpl-studio" style="padding: 14px;">
-            <div class="catalog-item-icon" style="font-size: 26px; width: 48px; height: 48px;">🏙️</div>
-            <div class="catalog-item-info">
-              <span class="catalog-item-name" style="font-size: 13.5px;">Modern Studio Apartment</span>
-              <span class="catalog-item-dim" style="font-size: 11px;">7.2m × 5.6m (40.3 m²) • Living, Bedroom, Bathroom, Kitchen</span>
-            </div>
-          </div>
-
-          <div class="catalog-item-card" id="tmpl-2bed" style="padding: 14px;">
-            <div class="catalog-item-icon" style="font-size: 26px; width: 48px; height: 48px;">🏰</div>
-            <div class="catalog-item-info">
-              <span class="catalog-item-name" style="font-size: 13.5px;">Luxury 2-Bedroom Suite</span>
-              <span class="catalog-item-dim" style="font-size: 11px;">10.0m × 7.0m (70.0 m²) • Master Suite, Guest Bed, Dining & Living</span>
-            </div>
-          </div>
-
-          <div class="catalog-item-card" id="tmpl-blank" style="padding: 14px;">
-            <div class="catalog-item-icon" style="font-size: 26px; width: 48px; height: 48px;">📝</div>
-            <div class="catalog-item-info">
-              <span class="catalog-item-name" style="font-size: 13.5px;">Blank Blueprint</span>
-              <span class="catalog-item-dim" style="font-size: 11px;">Start drafting from a clean millimeter canvas</span>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-sm" id="modal-cancel">Cancel</button>
-        </div>
-      </div>
-    `;
-
-    document.body.appendChild(overlay);
-
-    const close = () => overlay.remove();
-    overlay.querySelector('#modal-close')?.addEventListener('click', close);
-    overlay.querySelector('#modal-cancel')?.addEventListener('click', close);
-
-    overlay.querySelector('#tmpl-curved')?.addEventListener('click', () => {
-      projectStore.loadProject(createCoohomCurvedShowcaseTemplate());
-      this.cadViewport.centerView();
-      this.threeScene.fitToExtents();
-      showToast('Loaded Curved Penthouse Suite');
-      close();
-    });
-
-    overlay.querySelector('#tmpl-studio')?.addEventListener('click', () => {
-      projectStore.loadProject(createModernStudioTemplate());
-      this.cadViewport.centerView();
-      this.threeScene.fitToExtents();
-      showToast('Loaded Modern Studio Apartment');
-      close();
-    });
-
-    overlay.querySelector('#tmpl-2bed')?.addEventListener('click', () => {
-      projectStore.loadProject(createTwoBedroomSuiteTemplate());
-      this.cadViewport.centerView();
-      this.threeScene.fitToExtents();
-      showToast('Loaded Luxury 2-Bedroom Suite');
-      close();
-    });
-
-    overlay.querySelector('#tmpl-blank')?.addEventListener('click', () => {
-      projectStore.loadProject(createBlankCanvasTemplate());
-      this.cadViewport.centerView();
-      showToast('Loaded Blank Blueprint');
-      close();
-    });
+    openTemplateModal(this.threeScene, this.cadViewport);
   }
 
   private openShortcutsModal() {
-    const overlay = document.createElement('div');
-    overlay.className = 'modal-overlay open';
-    overlay.innerHTML = `
-      <div class="modal-box" style="max-width: 480px;">
-        <div class="modal-header">
-          <span class="modal-title">⌨️ Keyboard & Mouse Controls</span>
-          <button class="btn btn-sm btn-icon" id="modal-close">✕</button>
-        </div>
-        <div class="modal-body" style="gap: 10px; font-size: 12px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border-subtle);">
-            <span>Draw Straight Wall</span>
-            <kbd class="tool-shortcut-badge">B</kbd>
-          </div>
-          <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border-subtle);">
-            <span>Draw Rectangle Room</span>
-            <kbd class="tool-shortcut-badge">F</kbd>
-          </div>
-          <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border-subtle);">
-            <span>Select & Move Tool</span>
-            <kbd class="tool-shortcut-badge">V / Esc</kbd>
-          </div>
-          <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border-subtle);">
-            <span>Flip Door Swing Direction</span>
-            <kbd class="tool-shortcut-badge">Spacebar</kbd>
-          </div>
-          <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border-subtle);">
-            <span>Delete Selected Element</span>
-            <kbd class="tool-shortcut-badge">Del / Backspace</kbd>
-          </div>
-          <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border-subtle);">
-            <span>Undo / Redo</span>
-            <kbd class="tool-shortcut-badge">Ctrl+Z / Ctrl+Y</kbd>
-          </div>
-          <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border-subtle);">
-            <span>Pan 2D Canvas</span>
-            <span style="color: var(--text-secondary); font-size: 11px;">Middle Drag or Right Drag</span>
-          </div>
-          <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0;">
-            <span>3D Orbit & Zoom</span>
-            <span style="color: var(--text-secondary); font-size: 11px;">Left Drag / Wheel Scroll</span>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-sm btn-primary" id="modal-ok">Got it</button>
-        </div>
-      </div>
-    `;
-
-    document.body.appendChild(overlay);
-    const close = () => overlay.remove();
-    overlay.querySelector('#modal-close')?.addEventListener('click', close);
-    overlay.querySelector('#modal-ok')?.addEventListener('click', close);
+    openShortcutsModal();
   }
 
   private updateActiveStates(viewMode: string, projectName?: string) {
