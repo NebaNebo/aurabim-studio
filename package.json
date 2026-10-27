@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "earcut": "^3.0.1",
+    "firebase": "^13.1.0",
     "three": "^0.170.0"
   },
   "devDependencies": {
