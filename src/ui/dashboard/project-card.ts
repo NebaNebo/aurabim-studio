@@ -1,4 +1,5 @@
 import { SavedProjectItem } from '../../services/project-repository';
+import { customConfirm, customPrompt } from '../custom-dialog';
 
 export interface ProjectCardCallbacks {
   onOpen: (projectId: string) => void;
@@ -56,7 +57,7 @@ export class ProjectCardRenderer {
               <button class="dropdown-item" data-action="open">✏️ Open Studio</button>
               <button class="dropdown-item" data-action="duplicate">📄 Duplicate</button>
               <button class="dropdown-item" data-action="rename">🏷️ Rename</button>
-              <button class="dropdown-item" data-action="export">💾 Export JSON</button>
+              <button class="dropdown-item" data-action="export">💾 Export .aur Project</button>
               <div class="dropdown-divider"></div>
               <button class="dropdown-item text-danger" data-action="delete">🗑️ Delete</button>
             </div>
@@ -137,20 +138,21 @@ export class ProjectCardRenderer {
       callbacks.onExport?.(projectId);
     });
 
-    menuDropdown?.querySelector('[data-action="rename"]')?.addEventListener('click', (e) => {
+    menuDropdown?.querySelector('[data-action="rename"]')?.addEventListener('click', async (e) => {
       e.stopPropagation();
       menuDropdown.style.display = 'none';
       const currentName = titleEl?.textContent || 'Project';
-      const newName = prompt('Enter new project name:', currentName);
+      const newName = await customPrompt('Rename Architectural Design', 'Enter a new title for this BIM design:', currentName);
       if (newName && newName.trim()) {
         callbacks.onRename(projectId, newName.trim());
       }
     });
 
-    menuDropdown?.querySelector('[data-action="delete"]')?.addEventListener('click', (e) => {
+    menuDropdown?.querySelector('[data-action="delete"]')?.addEventListener('click', async (e) => {
       e.stopPropagation();
       menuDropdown.style.display = 'none';
-      if (confirm('Are you sure you want to delete this project?')) {
+      const confirmed = await customConfirm('Delete Design Project', 'Are you sure you want to permanently delete this project? This action cannot be undone.', { isDanger: true });
+      if (confirmed) {
         callbacks.onDelete(projectId);
       }
     });

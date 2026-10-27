@@ -1,0 +1,186 @@
+/* ==========================================================================
+   AuraBIM Studio — Custom Apple Modal Dialogs (Alert / Confirm / Prompt)
+   Liquid Glass functional layer, accessible focus trap, & spring entrance
+   ========================================================================== */
+
+.custom-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.44);
+  backdrop-filter: blur(18px) saturate(180%);
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 24px;
+  animation: dialogFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes dialogFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.custom-dialog-card {
+  width: 100%;
+  max-width: 440px;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(32px) saturate(190%);
+  -webkit-backdrop-filter: blur(32px) saturate(190%);
+  border-radius: var(--radius-xl, 20px);
+  box-shadow: 0 28px 64px rgba(0, 0, 0, 0.18), 0 6px 16px rgba(0, 0, 0, 0.05), inset 0 0 0 1px rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  padding: 28px 26px 24px;
+  animation: dialogCardIn 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+}
+
+@keyframes dialogCardIn {
+  from { opacity: 0; transform: scale(0.95) translateY(12px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.custom-dialog-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.custom-dialog-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+  background: #f1f5f9;
+}
+
+.custom-dialog-icon.danger {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.custom-dialog-icon.warning {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.custom-dialog-icon.info {
+  background: #e0f2fe;
+  color: #0284c7;
+}
+
+.custom-dialog-icon.success {
+  background: #e8f5e9;
+  color: #1b5e20;
+}
+
+.custom-dialog-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.custom-dialog-title {
+  font-size: 16.5px;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  color: #1d1d1f;
+  line-height: 1.25;
+}
+
+.custom-dialog-message {
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.45;
+}
+
+.custom-dialog-input-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.custom-dialog-input {
+  height: 42px;
+  padding: 0 14px;
+  font-size: 14px;
+  font-weight: 600;
+  border: 1px solid #d4d4d8;
+  border-radius: 10px;
+  outline: none;
+  background: #ffffff;
+  color: #1d1d1f;
+  transition: all 0.16s ease;
+}
+
+.custom-dialog-input:focus {
+  border-color: #0071e3;
+  box-shadow: 0 0 0 3.5px rgba(0, 113, 227, 0.2);
+}
+
+.custom-dialog-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.dialog-btn {
+  height: 38px;
+  padding: 0 16px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dialog-btn:active {
+  transform: scale(0.98);
+}
+
+.dialog-btn-primary {
+  background: #1b4d3e;
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 2px 6px rgba(27, 77, 62, 0.22);
+}
+
+.dialog-btn-primary:hover {
+  background: #14382c;
+}
+
+.dialog-btn-danger {
+  background: #dc2626;
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.25);
+}
+
+.dialog-btn-danger:hover {
+  background: #b91c1c;
+}
+
+.dialog-btn-secondary {
+  background: #f1f5f9;
+  color: #475569;
+  border: none;
+}
+
+.dialog-btn-secondary:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}

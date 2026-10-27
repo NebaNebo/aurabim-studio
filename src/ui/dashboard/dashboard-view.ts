@@ -2,7 +2,10 @@ import { projectRepository, SavedProjectItem } from '../../services/project-repo
 import { authService } from '../../services/auth-service';
 import { ProjectCardRenderer } from './project-card';
 import { NewProjectModal, NewProjectOptions } from './new-project-modal';
+import { DashboardHeaderRenderer, DashboardHeaderProps } from './dashboard-header';
+import { exportAsAurFile, parseAurOrJson } from '../../core/aur-file-system';
 import { showToast } from '../toast-notifier';
+import { customConfirm, customAlert } from '../custom-dialog';
 
 export interface DashboardCallbacks {
   onOpenProject: (projectId: string) => void;
@@ -48,7 +51,7 @@ export class DashboardView {
 
     await projectRepository.seedDefaultProjectsIfEmpty(userId);
     this.projects = await projectRepository.listProjects(userId);
-    // Prune selected IDs that no longer exist
+
     const validIds = new Set(this.projects.map(p => p.id));
     this.selectedIds = new Set([...this.selectedIds].filter(id => validIds.has(id)));
 
@@ -77,72 +80,20 @@ export class DashboardView {
     totalAreaM2 = Math.round(totalAreaM2 * 10) / 10;
     const hasSelection = this.selectedIds.size > 0;
 
+    const headerProps: DashboardHeaderProps = {
+      displayName,
+      isGuest: !!user?.isGuest,
+      totalProjects,
+      totalAreaM2,
+      searchQuery: this.searchQuery
+    };
+
     this.container.innerHTML = `
       <div class="dash-root">
-        <!-- Apple Liquid Glass Navigation Bar -->
-        <header class="dash-navbar">
-          <div class="dash-nav-left">
-            <div class="dash-brand">
-              <span class="dash-logo-icon">🏛️</span>
-              <span class="dash-logo-text">AuraBIM</span>
-              <span class="dash-version-badge">Studio</span>
-            </div>
-          </div>
+        ${DashboardHeaderRenderer.renderNavbar(headerProps)}
 
-          <div class="dash-nav-center">
-            <div class="dash-search-box">
-              <span class="dash-search-icon">🔍</span>
-              <input type="text" id="dash-search-input" class="dash-search-input" placeholder="Search architectural projects by name..." value="${this.searchQuery}" />
-              <button class="dash-search-clear" id="btn-search-clear" title="Clear search" style="${this.searchQuery ? 'display: block;' : 'display: none;'}">✕</button>
-            </div>
-          </div>
-
-          <div class="dash-nav-right">
-            <button class="btn-primary-emerald" id="btn-dash-new-project">
-              <span style="font-size: 15px; font-weight: 700;">+</span>
-              <span>New Project</span>
-            </button>
-
-            <!-- User Profile Chip -->
-            <div class="dash-user-badge" id="dash-user-chip">
-              <div class="dash-avatar">${displayName.charAt(0).toUpperCase()}</div>
-              <div class="dash-user-info">
-                <span class="dash-user-name">${displayName}</span>
-                <span class="dash-user-role">${user?.isGuest ? 'Guest Designer' : 'Architect'}</span>
-              </div>
-              <button class="dash-signout-btn" id="btn-dash-signout" title="Sign Out of Studio">↪</button>
-            </div>
-          </div>
-        </header>
-
-        <!-- Main Architectural Workspace -->
         <main class="dash-main">
-          <!-- Spatial Metrics Banner with Animated Status Dot -->
-          <section class="dash-hero-banner">
-            <div class="dash-hero-left">
-              <h1 class="dash-hero-title">Welcome back, ${displayName}</h1>
-              <p class="dash-hero-desc">Your BIM projects are synced in real-time with Firebase Firestore & Cloudinary CDN.</p>
-            </div>
-            <div class="dash-stats-group">
-              <div class="dash-stat-item">
-                <span class="dash-stat-num">${totalProjects}</span>
-                <span class="dash-stat-label">Total Designs</span>
-              </div>
-              <div class="dash-stat-divider"></div>
-              <div class="dash-stat-item">
-                <span class="dash-stat-num">${totalAreaM2} m²</span>
-                <span class="dash-stat-label">Designed Area</span>
-              </div>
-              <div class="dash-stat-divider"></div>
-              <div class="dash-stat-item">
-                <span class="dash-stat-badge">
-                  <span class="dash-pulse-dot"></span>
-                  <span>Cloud Connected</span>
-                </span>
-                <span class="dash-stat-label">carvazon3d · uyd1vcng</span>
-              </div>
-            </div>
-          </section>
+          ${DashboardHeaderRenderer.renderHeroBanner(headerProps)}
 
           <!-- Recent Projects Section Header & Controls -->
           <section class="dash-projects-section">
@@ -218,6 +169,38 @@ export class DashboardView {
       this.bindEvents();
     });
 
+    // Import .aur native project archive from dashboard
+    const aurInput = this.container.querySelector('#input-dash-aur-import') as HTMLInputElement | null;
+    this.container.querySelector('#btn-dash-import-aur')?.addEventListener('click', () => {
+      aurInput?.click();
+    });
+
+    aurInput?.addEventListener('change', async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = async (evt) => {
+        try {
+          const content = evt.target?.result as string;
+          const { state, isAur, meta } = parseAurOrJson(content);
+          const user = authService.getCurrentUser();
+          const userId = user ? user.uid : 'guest_local';
+
+          // Assign new ID to prevent ID collision in user's workspace
+          state.id = `proj_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+          await projectRepository.saveProject(userId, state, meta?.thumbnailUrl, 'imported_aur');
+
+          showToast(isAur ? `Imported .aur archive: "${state.name}"` : `Imported design: "${state.name}"`);
+          await this.refresh();
+        } catch (err: any) {
+          await customAlert('Import Error', err.message || 'Error parsing imported file.', { type: 'error' });
+        }
+      };
+      reader.readAsText(file);
+      aurInput.value = '';
+    });
+
     this.container.querySelector('#btn-dash-new-project')?.addEventListener('click', () => {
       this.newProjectModal.show();
     });
@@ -238,7 +221,12 @@ export class DashboardView {
       const empties = this.projects.filter(p => p.wallCount === 0 && p.roomCount === 0);
       if (empties.length === 0) return;
 
-      if (confirm(`Clean up and remove ${empties.length} empty draft designs?`)) {
+      const confirmed = await customConfirm(
+        'Clean Up Empty Drafts',
+        `Remove ${empties.length} empty draft designs with 0 walls? This cleans up duplicate empty cards.`,
+        { isDanger: true, confirmText: 'Clean Up' }
+      );
+      if (confirmed) {
         for (const p of empties) {
           await projectRepository.deleteProject(userId, p.id);
         }
@@ -263,7 +251,12 @@ export class DashboardView {
     this.container.querySelector('#btn-bulk-delete')?.addEventListener('click', async () => {
       const count = this.selectedIds.size;
       if (count === 0) return;
-      if (confirm(`Delete ${count} selected project${count > 1 ? 's' : ''}?`)) {
+      const confirmed = await customConfirm(
+        'Delete Selected Designs',
+        `Permanently delete ${count} selected project design${count > 1 ? 's' : ''}? This action cannot be undone.`,
+        { isDanger: true, confirmText: 'Delete Selected' }
+      );
+      if (confirmed) {
         const user = authService.getCurrentUser();
         const userId = user ? user.uid : 'guest_local';
         for (const id of this.selectedIds) {
@@ -275,8 +268,13 @@ export class DashboardView {
       }
     });
 
-    this.container.querySelector('#btn-dash-signout')?.addEventListener('click', () => {
-      if (confirm('Sign out of AuraBIM Studio?')) {
+    this.container.querySelector('#btn-dash-signout')?.addEventListener('click', async () => {
+      const confirmed = await customConfirm(
+        'Sign Out of AuraBIM Studio',
+        'Are you sure you want to sign out of your workspace session?',
+        { confirmText: 'Sign Out' }
+      );
+      if (confirmed) {
         this.callbacks.onSignOut();
       }
     });
@@ -331,12 +329,8 @@ export class DashboardView {
           const userId = user ? user.uid : 'guest_local';
           const p = await projectRepository.getProject(userId, id);
           if (p) {
-            const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(p.state, null, 2));
-            const dl = document.createElement('a');
-            dl.setAttribute('href', dataStr);
-            dl.setAttribute('download', `${p.name.replace(/[^a-zA-Z0-9_-]/g, '_')}_blueprint.json`);
-            dl.click();
-            showToast(`Exported "${p.name}"`);
+            exportAsAurFile(p.state, p.thumbnailUrl);
+            showToast(`Exported "${p.name}".aur Archive`);
           }
         }
       });

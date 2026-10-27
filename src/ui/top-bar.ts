@@ -5,6 +5,8 @@ import { CadViewport } from '../cad2d/cad-viewport';
 import { openShortcutsModal } from './shortcuts-modal';
 import { openTemplateModal } from './template-picker-modal';
 import { autoSaveManager, AutoSaveStatus } from '../services/auto-save-manager';
+import { exportAsAurFile, parseAurOrJson } from '../core/aur-file-system';
+import { customAlert, customConfirm } from './custom-dialog';
 
 export class TopBarController {
   private container: HTMLElement;
@@ -88,9 +90,9 @@ export class TopBarController {
         <div class="top-bar-divider"></div>
 
         <button class="btn btn-sm" id="btn-file-template" title="Select Architectural Blueprint Template">📁 Templates</button>
-        <button class="btn btn-sm" id="btn-file-open" title="Open Project JSON">📂 Open</button>
-        <input type="file" id="input-file-import" accept=".json" style="display: none;" />
-        <button class="btn btn-sm" id="btn-file-export" title="Save Project as JSON">💾 Save</button>
+        <button class="btn btn-sm" id="btn-file-open" title="Import .aur or JSON Blueprint">📂 Open</button>
+        <input type="file" id="input-file-import" accept=".aur,.json" style="display: none;" />
+        <button class="btn btn-sm" id="btn-file-export" title="Export .aur Project Archive">💾 Export .aur</button>
         <button class="btn btn-sm" id="btn-export-png" title="Export 2D Blueprint as High-Res PNG">📐 Blueprint</button>
       </div>
 
@@ -182,36 +184,27 @@ export class TopBarController {
       if (!file) return;
 
       const reader = new FileReader();
-      reader.onload = (evt) => {
+      reader.onload = async (evt) => {
         try {
-          const parsed = JSON.parse(evt.target?.result as string);
-          if (parsed.nodes && parsed.walls) {
-            projectStore.loadProject(parsed);
-            this.cadViewport.centerView();
-            this.threeScene.fitToExtents();
-            showToast('Project imported successfully');
-          } else {
-            alert('Invalid AuraBIM project JSON format.');
-          }
-        } catch {
-          alert('Error parsing JSON file.');
+          const content = evt.target?.result as string;
+          const { state, isAur } = parseAurOrJson(content);
+          projectStore.loadProject(state);
+          this.cadViewport.centerView();
+          this.threeScene.fitToExtents();
+          showToast(isAur ? `Loaded .aur Archive: "${state.name}"` : `Loaded Project: "${state.name}"`);
+        } catch (err: any) {
+          await customAlert('Import Error', err.message || 'Error parsing imported project file.', { type: 'error' });
         }
       };
       reader.readAsText(file);
       fileInput.value = '';
     });
 
-    // Save File (Export JSON)
+    // Save File (Export .aur Archive)
     this.container.querySelector('#btn-file-export')?.addEventListener('click', () => {
       const state = projectStore.getState();
-      const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${(state.name || 'project').toLowerCase().replace(/\s+/g, '_')}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
-      showToast('Project JSON saved');
+      exportAsAurFile(state);
+      showToast(`Exported "${state.name}".aur Archive`);
     });
 
     // Export 2D Blueprint PNG
@@ -241,8 +234,13 @@ export class TopBarController {
     });
 
     // Clear canvas
-    this.container.querySelector('#btn-clear')?.addEventListener('click', () => {
-      if (confirm('Clear entire project? All walls, openings, and rooms will be removed.')) {
+    this.container.querySelector('#btn-clear')?.addEventListener('click', async () => {
+      const confirmed = await customConfirm(
+        'Clear Entire Canvas',
+        'Are you sure you want to clear the entire project? All walls, openings, and rooms will be removed.',
+        { isDanger: true, confirmText: 'Clear Canvas' }
+      );
+      if (confirmed) {
         projectStore.clearProject();
         showToast('Canvas cleared');
       }
