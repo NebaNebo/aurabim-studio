@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AuraBIM Studio — 2D CAD & 3D Interior Design</title>
+  <meta name="description" content="Next-generation browser-based 2D CAD drafting and real-time 3D interior design studio with spatial graph architecture." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/src/styles/design-tokens.css" />
+  <link rel="stylesheet" href="/src/styles/layout.css" />
+  <link rel="stylesheet" href="/src/styles/components.css" />
+</head>
+<body>
+  <div id="app-container">
+    <!-- Zone 1: Top Command Bar -->
+    <header id="top-command-bar"></header>
+
+    <!-- Main Workspace -->
+    <main id="main-workspace">
+      <!-- Zone 2A: Far Left Navigation Icon Rail -->
+      <nav id="nav-rail"></nav>
+
+      <!-- Zone 2B: Left Tool Dock -->
+      <aside id="left-dock"></aside>
+
+      <!-- Zone 3: Center Viewport Canvas -->
+      <section id="center-viewport">
+        <canvas id="cad-canvas"></canvas>
+        <canvas id="three-canvas"></canvas>
+
+        <!-- Zone 4: Picture-in-Picture (PiP) Window with 3D/Rooms/Drawing tabs -->
+        <div id="pip-window">
+          <div class="pip-header">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span class="pip-drag-grip" style="color: #94a3b8; font-size: 13px; cursor: grab; user-select: none;" title="Drag to reposition">⠿</span>
+              <div class="pip-tabs">
+                <button class="pip-tab" data-tab="3d" id="pip-tab-toggle">2D</button>
+                <button class="pip-tab active" data-tab="rooms">Rooms</button>
+                <button class="pip-tab" data-tab="drawing">Drawing</button>
+              </div>
+            </div>
+            <div style="display: flex; gap: 4px; align-items: center;">
+              <button class="btn btn-icon btn-sm" id="btn-pip-fullscreen" title="Expand View">🗖</button>
+              <button class="btn btn-icon btn-sm" id="btn-pip-close" title="Close">✕</button>
+            </div>
+          </div>
+          <div class="pip-canvas-container" id="pip-canvas-slot"></div>
+        </div>
+      </section>
+
+      <!-- Zone 5: Right Property Inspector -->
+      <aside id="right-inspector"></aside>
+    </main>
+
+    <!-- Bottom HUD Status Bar -->
+    <footer id="status-hud-bar">
+      <div class="hud-left">
+        <div class="segmented-control" id="hud-mode-toggle">
+          <button class="seg-btn active" data-mode="2d">2D CAD</button>
+          <button class="seg-btn" data-mode="3d">3D View</button>
+        </div>
+        <span id="status-hud-stats" style="font-size: 11px; font-weight: 600; color: #64748b; margin-left: 8px;"></span>
+      </div>
+
+      <div class="hud-center">
+        <button class="btn btn-icon btn-sm" id="btn-hud-split" title="Dual Split Screen (2D & 3D Side-by-Side)">◫</button>
+        <button class="btn btn-icon btn-sm" id="btn-hud-extents" title="Fit to Extents (Center View)">🎯</button>
+      </div>
+
+      <div class="hud-right">
+        <button class="btn btn-icon btn-sm" id="btn-zoom-out" title="Zoom Out">−</button>
+        <span id="hud-zoom-level" style="font-size: 11px; font-weight: 600; min-width: 48px; text-align: center;">100 %</span>
+        <button class="btn btn-icon btn-sm" id="btn-zoom-in" title="Zoom In">+</button>
+      </div>
+    </footer>
+  </div>
+
+  <div id="toast-container"></div>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

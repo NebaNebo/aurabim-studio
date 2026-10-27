@@ -1,0 +1,82 @@
+:root {
+  /* Apple Design & Book-Inspired Typography */
+  --font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", -system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  
+  /* Book & Editorial Warm Architectural Palette (Images 1 & 2 inspired) */
+  --bg-app: #f7f7f5;
+  --bg-canvas: #f4f4f2;
+  --bg-panel: #ffffff;
+  --bg-panel-solid: #ffffff;
+  --bg-panel-secondary: #fafaf8;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f5f6f8;
+  --bg-card-active: #eef2f6;
+  --bg-input: #ffffff;
+  
+  --border-subtle: #eaeae7;
+  --border-strong: #d8d8d4;
+  --border-focus: #0071e3;
+  
+  /* Text Hierarchy (Apple Ink) */
+  --text-primary: #1c1c1e;
+  --text-secondary: #52525b;
+  --text-muted: #8e8e93;
+  --text-inverse: #ffffff;
+  
+  /* Curated Book & Apple Accents */
+  --accent-emerald: #1c4e3d;       /* Forest Emerald Primary Button from Image 1 */
+  --accent-emerald-hover: #14382c;
+  --accent-emerald-light: #e8f5e9;
+  --accent-emerald-text: #1b5e20;
+  
+  --accent-blue: #0071e3;          /* Apple System Blue */
+  --accent-blue-hover: #0056b3;
+  --accent-blue-subtle: #edf5ff;
+  
+  --accent-amber: #f59e0b;         /* Warm amber draft badge */
+  --accent-amber-light: #fffbeb;
+  --accent-amber-text: #b45309;
+  
+  --accent-purple: #7c3aed;
+  --accent-cyan: #0ea5e9;
+  --accent-red: #ef4444;
+  --accent-red-light: #fee2e2;
+  
+  /* Geometry Radii */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-full: 9999px;
+  
+  /* Smooth Apple Elevation Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.07), 0 2px 6px rgba(0, 0, 0, 0.04);
+  --shadow-floating: 0 16px 40px rgba(0, 0, 0, 0.1), 0 4px 12px rgba(0, 0, 0, 0.04);
+  
+  /* Glassmorphism & Micro-animations */
+  --blur-glass: blur(20px);
+  --transition-fast: 0.12s cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-normal: 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
