@@ -52,10 +52,13 @@ describe('Auth Service & Authentication Flow', () => {
     expect(authService.getCurrentUser()?.displayName).toBe('Le Corbusier');
   });
 
-  it('signs in with Google simulation fallback when cloud is offline/demo', async () => {
-    const user = await authService.signInWithGoogle();
+  it('signs in with Google account identity and persists user profile', async () => {
+    const user = await authService.signInWithGoogle('architect.frank@gmail.com', 'Frank Gehry');
     expect(user).toBeDefined();
-    expect(user.displayName).toBe('Google Designer (Demo)');
+    expect(user.displayName).toBe('Frank Gehry');
+    expect(user.email).toBe('architect.frank@gmail.com');
+    expect(user.isGuest).toBe(false);
+    expect(user.uid).toContain('google_user_');
     expect(authService.getCurrentUser()).not.toBeNull();
   });
 

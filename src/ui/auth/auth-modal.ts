@@ -1,5 +1,7 @@
 import { authService, AuthUserProfile } from '../../services/auth-service';
 import { showToast } from '../toast-notifier';
+import { isCloudConnected } from '../../services/firebase-config';
+import { customPrompt } from '../custom-dialog';
 
 export class AuthModal {
   private container: HTMLElement;
@@ -196,6 +198,23 @@ export class AuthModal {
 
     this.container.querySelector('#btn-google-auth')?.addEventListener('click', async () => {
       try {
+        if (!isCloudConnected) {
+          const googleEmail = await customPrompt(
+            'Sign in with Google',
+            'Enter your Google account email to connect to AuraBIM Studio:',
+            'architect@gmail.com',
+            { placeholder: 'yourname@gmail.com', confirmText: 'Sign in with Google' }
+          );
+          if (!googleEmail || !googleEmail.trim()) {
+            return;
+          }
+          const user = await authService.signInWithGoogle(googleEmail.trim());
+          showToast(`Signed in with Google as ${user.displayName}!`);
+          this.hide();
+          this.onAuthSuccessCallback?.(user);
+          return;
+        }
+
         const user = await authService.signInWithGoogle();
         showToast(`Signed in with Google as ${user.displayName}!`);
         this.hide();

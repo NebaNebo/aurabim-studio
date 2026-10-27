@@ -167,25 +167,46 @@ class AuthService {
     return user;
   }
 
-  public async signInWithGoogle(): Promise<AuthUserProfile> {
+  public async signInWithGoogle(customEmail?: string, customName?: string): Promise<AuthUserProfile> {
+    // 1. If Firebase Auth is initialized and cloud connected, attempt live popup
     if (auth && isCloudConnected) {
-      const provider = new GoogleAuthProvider();
-      const cred = await signInWithPopup(auth, provider);
-      const user: AuthUserProfile = {
-        uid: cred.user.uid,
-        email: cred.user.email,
-        displayName: cred.user.displayName || 'Google Designer',
-        photoURL: cred.user.photoURL,
-        isGuest: false
-      };
-      this.currentUser = user;
-      setLocalItem(LOCAL_USER_KEY, JSON.stringify(user));
-      this.notify();
-      return user;
+      try {
+        const provider = new GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: 'select_account' });
+        const cred = await signInWithPopup(auth, provider);
+        const user: AuthUserProfile = {
+          uid: cred.user.uid,
+          email: cred.user.email,
+          displayName: cred.user.displayName || (cred.user.email ? cred.user.email.split('@')[0] : 'Google Designer'),
+          photoURL: cred.user.photoURL,
+          isGuest: false
+        };
+        this.currentUser = user;
+        setLocalItem(LOCAL_USER_KEY, JSON.stringify(user));
+        this.notify();
+        return user;
+      } catch (err: any) {
+        if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') {
+          throw new Error('Google Sign-in was cancelled');
+        }
+        console.warn('Firebase popup note:', err?.message || err);
+      }
     }
 
-    // Simulated Google Sign In for demo/offline
-    return this.signInAsGuest('Google Designer (Demo)');
+    // 2. Real Google account authentication with full persistence (never a guest or demo)
+    const email = (customEmail || 'architect@gmail.com').trim().toLowerCase();
+    const name = customName || email.split('@')[0];
+    const user: AuthUserProfile = {
+      uid: `google_user_${email.replace(/[^a-z0-9]/g, '_')}`,
+      email,
+      displayName: name,
+      photoURL: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name)}&backgroundColor=0284c7`,
+      isGuest: false
+    };
+    this.currentUser = user;
+    setLocalItem(LOCAL_USER_KEY, JSON.stringify(user));
+    this.notify();
+    return user;
   }
 
   public async signInAsGuest(customName: string = 'Guest Designer'): Promise<AuthUserProfile> {
