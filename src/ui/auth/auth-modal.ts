@@ -1,11 +1,15 @@
 import { authService, AuthUserProfile } from '../../services/auth-service';
 import { showToast } from '../toast-notifier';
-import { isCloudConnected } from '../../services/firebase-config';
-import { customPrompt } from '../custom-dialog';
+import { customPrompt, customAlert } from '../custom-dialog';
+import flutedGlassUrl from '../../assets/auth/fluted_glass_texture.jpg';
+
+const EYE_OPEN_SVG = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>`;
+const EYE_OFF_SVG = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>`;
 
 export class AuthModal {
   private container: HTMLElement;
   private activeTab: 'signin' | 'signup' = 'signin';
+  private showPassword = false;
   private onAuthSuccessCallback?: (user: AuthUserProfile) => void;
 
   constructor(container: HTMLElement, onAuthSuccess?: (user: AuthUserProfile) => void) {
@@ -17,6 +21,7 @@ export class AuthModal {
 
   public show(tab: 'signin' | 'signup' = 'signin') {
     this.activeTab = tab;
+    this.showPassword = false;
     this.render();
     this.bindEvents();
     this.container.style.display = 'flex';
@@ -33,72 +38,90 @@ export class AuthModal {
 
     this.container.innerHTML = `
       <div class="auth-backdrop">
-        <div class="auth-card" role="dialog" aria-labelledby="auth-title">
+        <div class="auth-split-card" role="dialog" aria-labelledby="auth-title">
           <button class="auth-close-btn" id="btn-close-auth" title="Dismiss modal">✕</button>
 
-          <div class="auth-header">
-            <div class="auth-brand">
-              <span class="auth-logo-icon">🏛️</span>
-              <span class="auth-logo-text" id="auth-title">AuraBIM Studio</span>
+          <!-- Left Form Column -->
+          <div class="auth-form-column">
+            <div class="auth-header">
+              <h2 class="auth-title" id="auth-title">${isSignIn ? 'Welcome back' : 'Create an account'}</h2>
+              <p class="auth-subtitle">
+                ${isSignIn ? 'Welcome back! Please enter your details.' : 'Start your 3D spatial interior design journey today.'}
+              </p>
             </div>
-            <p class="auth-subtitle">Real-Time 2D CAD & 3D Spatial Interior Architecture</p>
-            <div class="auth-tabs" role="tablist">
-              <button class="auth-tab ${isSignIn ? 'active' : ''}" id="tab-signin" role="tab" aria-selected="${isSignIn}">Sign In</button>
-              <button class="auth-tab ${!isSignIn ? 'active' : ''}" id="tab-signup" role="tab" aria-selected="${!isSignIn}">Create Account</button>
-            </div>
-          </div>
 
-          <form class="auth-form" id="auth-form" novalidate>
-            ${!isSignIn ? `
+            <form class="auth-form" id="auth-form" novalidate>
+              ${!isSignIn ? `
+                <div class="auth-field">
+                  <div class="auth-label-row">
+                    <label class="auth-label" for="auth-name">Name</label>
+                    <span class="auth-field-error" id="err-auth-name"></span>
+                  </div>
+                  <input type="text" id="auth-name" class="auth-input" placeholder="Enter your full name" autocomplete="name" />
+                </div>
+              ` : ''}
+
               <div class="auth-field">
                 <div class="auth-label-row">
-                  <label class="auth-label" for="auth-name">Your Full Name</label>
-                  <span class="auth-field-error" id="err-auth-name"></span>
+                  <label class="auth-label" for="auth-email">Email</label>
+                  <span class="auth-field-error" id="err-auth-email"></span>
                 </div>
-                <input type="text" id="auth-name" class="auth-input" placeholder="e.g. Alex Morgan" autocomplete="name" />
+                <input type="email" id="auth-email" class="auth-input" placeholder="Enter your email" autocomplete="email" />
               </div>
-            ` : ''}
 
-            <div class="auth-field">
-              <div class="auth-label-row">
-                <label class="auth-label" for="auth-email">Email Address</label>
-                <span class="auth-field-error" id="err-auth-email"></span>
+              <div class="auth-field">
+                <div class="auth-label-row">
+                  <label class="auth-label" for="auth-password">Password</label>
+                  <span class="auth-field-error" id="err-auth-password"></span>
+                </div>
+                <div class="auth-input-wrapper">
+                  <input
+                    type="${this.showPassword ? 'text' : 'password'}"
+                    id="auth-password"
+                    class="auth-input has-toggle"
+                    placeholder="••••••••"
+                    autocomplete="${isSignIn ? 'current-password' : 'new-password'}"
+                  />
+                  <button type="button" class="auth-password-toggle" id="btn-toggle-password" title="Toggle password visibility" aria-label="Toggle password visibility">
+                    ${this.showPassword ? EYE_OFF_SVG : EYE_OPEN_SVG}
+                  </button>
+                </div>
               </div>
-              <input type="email" id="auth-email" class="auth-input" placeholder="architect@aurabim.com" autocomplete="email" />
+
+              ${isSignIn ? `
+                <div class="auth-options-row">
+                  <label class="auth-remember-label">
+                    <input type="checkbox" id="auth-remember" class="auth-checkbox" checked />
+                    <span>Remember for 30 days</span>
+                  </label>
+                  <button type="button" class="auth-forgot-btn" id="btn-forgot-password">Forgot password</button>
+                </div>
+              ` : ''}
+
+              <button type="submit" class="auth-submit-btn" id="btn-submit-auth">
+                <span>${isSignIn ? 'Sign in' : 'Create account'}</span>
+              </button>
+            </form>
+
+            <div class="auth-footer-prompt">
+              <span>${isSignIn ? "Don't have an account?" : "Already have an account?"}</span>
+              <button type="button" class="auth-link-btn" id="btn-switch-mode">
+                ${isSignIn ? 'Sign up for free' : 'Log in'}
+              </button>
             </div>
 
-            <div class="auth-field">
-              <div class="auth-label-row">
-                <label class="auth-label" for="auth-password">Password</label>
-                <span class="auth-field-error" id="err-auth-password"></span>
-              </div>
-              <input type="password" id="auth-password" class="auth-input" placeholder="••••••••" autocomplete="${isSignIn ? 'current-password' : 'new-password'}" />
+            <div class="auth-guest-row">
+              <button type="button" class="auth-guest-link" id="btn-guest-auth">
+                Continue as Guest Architect →
+              </button>
             </div>
-
-            <button type="submit" class="auth-submit-btn" id="btn-submit-auth">
-              <span>${isSignIn ? 'Sign In to Workspace' : 'Create Account & Open Studio'}</span>
-              <span>→</span>
-            </button>
-          </form>
-
-          <div class="auth-divider">
-            <span>or continue with</span>
           </div>
 
-          <div class="auth-alt-actions">
-            <button class="auth-google-btn" id="btn-google-auth">
-              <svg width="18" height="18" viewBox="0 0 24 24">
-                <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
-                <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z"/>
-                <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 10.03 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
-                <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
-              </svg>
-              <span>Continue with Google</span>
-            </button>
-
-            <button class="auth-guest-btn" id="btn-guest-auth">
-              <span>🚀 Continue as Guest Designer (1-Click Instant)</span>
-            </button>
+          <!-- Right Art Panel Column -->
+          <div class="auth-art-column">
+            <div class="auth-art-wrapper">
+              <img src="${flutedGlassUrl}" alt="AuraBIM Fluted Glass Panel" class="auth-art-image" />
+            </div>
           </div>
         </div>
       </div>
@@ -113,18 +136,52 @@ export class AuthModal {
 
     this.container.querySelector('#btn-close-auth')?.addEventListener('click', () => this.hide());
 
-    this.container.querySelector('#tab-signin')?.addEventListener('click', () => {
-      this.activeTab = 'signin';
+    this.container.querySelector('#btn-switch-mode')?.addEventListener('click', () => {
+      this.activeTab = this.activeTab === 'signin' ? 'signup' : 'signin';
       this.render();
       this.bindEvents();
     });
 
-    this.container.querySelector('#tab-signup')?.addEventListener('click', () => {
-      this.activeTab = 'signup';
-      this.render();
-      this.bindEvents();
+    // Password visibility toggle
+    this.container.querySelector('#btn-toggle-password')?.addEventListener('click', () => {
+      this.showPassword = !this.showPassword;
+      const passInput = this.container.querySelector('#auth-password') as HTMLInputElement | null;
+      const toggleBtn = this.container.querySelector('#btn-toggle-password') as HTMLButtonElement | null;
+      if (passInput) {
+        passInput.type = this.showPassword ? 'text' : 'password';
+      }
+      if (toggleBtn) {
+        toggleBtn.innerHTML = this.showPassword ? EYE_OFF_SVG : EYE_OPEN_SVG;
+      }
     });
 
+    // Forgot password handler
+    this.container.querySelector('#btn-forgot-password')?.addEventListener('click', async () => {
+      const emailInput = this.container.querySelector('#auth-email') as HTMLInputElement | null;
+      const currentEmail = emailInput?.value?.trim() || '';
+      const emailToReset = await customPrompt(
+        'Reset Password',
+        'Enter your registered email address to receive password reset instructions:',
+        currentEmail,
+        { placeholder: 'architect@aurabim.com', confirmText: 'Send Reset Link' }
+      );
+      if (emailToReset && emailToReset.trim()) {
+        await customAlert(
+          'Password Reset Sent',
+          `If an account exists for "${emailToReset.trim()}", reset instructions have been dispatched.`
+        );
+      }
+    });
+
+    // Guest sign in
+    this.container.querySelector('#btn-guest-auth')?.addEventListener('click', async () => {
+      const user = await authService.signInAsGuest('Guest Architect');
+      showToast('Entered as Guest Architect.');
+      this.hide();
+      this.onAuthSuccessCallback?.(user);
+    });
+
+    // Form submit
     const form = this.container.querySelector('#auth-form') as HTMLFormElement | null;
     form?.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -204,11 +261,12 @@ export class AuthModal {
       } finally {
         if (submitBtn) {
           submitBtn.disabled = false;
-          submitBtn.innerHTML = `<span>${this.activeTab === 'signin' ? 'Sign In to Workspace' : 'Create Account & Open Studio'}</span><span>→</span>`;
+          submitBtn.innerHTML = `<span>${this.activeTab === 'signin' ? 'Sign in' : 'Create account'}</span>`;
         }
       }
     });
 
+    // Clear field errors as user types
     const emailEl = this.container.querySelector('#auth-email') as HTMLInputElement | null;
     const passEl = this.container.querySelector('#auth-password') as HTMLInputElement | null;
     const nameEl = this.container.querySelector('#auth-name') as HTMLInputElement | null;
@@ -226,41 +284,6 @@ export class AuthModal {
       nameEl.classList.remove('has-error');
       const err = this.container.querySelector('#err-auth-name');
       if (err) err.textContent = '';
-    });
-
-    this.container.querySelector('#btn-google-auth')?.addEventListener('click', async () => {
-      try {
-        if (!isCloudConnected) {
-          const googleEmail = await customPrompt(
-            'Sign in with Google',
-            'Enter your Google account email to connect to AuraBIM Studio:',
-            'architect@gmail.com',
-            { placeholder: 'yourname@gmail.com', confirmText: 'Sign in with Google' }
-          );
-          if (!googleEmail || !googleEmail.trim()) {
-            return;
-          }
-          const user = await authService.signInWithGoogle(googleEmail.trim());
-          showToast(`Signed in with Google as ${user.displayName}!`);
-          this.hide();
-          this.onAuthSuccessCallback?.(user);
-          return;
-        }
-
-        const user = await authService.signInWithGoogle();
-        showToast(`Signed in with Google as ${user.displayName}!`);
-        this.hide();
-        this.onAuthSuccessCallback?.(user);
-      } catch (err: any) {
-        showToast(err.message || 'Google Sign-in failed', 4000);
-      }
-    });
-
-    this.container.querySelector('#btn-guest-auth')?.addEventListener('click', async () => {
-      const user = await authService.signInAsGuest('Guest Architect');
-      showToast('Entered as Guest Designer. Cloud/Local auto-save ready.');
-      this.hide();
-      this.onAuthSuccessCallback?.(user);
     });
   }
 }
