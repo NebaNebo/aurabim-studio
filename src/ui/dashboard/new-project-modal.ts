@@ -22,8 +22,7 @@ export class NewProjectModal {
   constructor(container: HTMLElement, onCreate?: (opts: NewProjectOptions) => void) {
     this.container = container;
     this.onCreateCallback = onCreate;
-    this.render();
-    this.bindEvents();
+    this.hide();
   }
 
   public show() {
@@ -31,13 +30,16 @@ export class NewProjectModal {
     this.render();
     this.bindEvents();
     this.container.style.display = 'flex';
-    const input = this.container.querySelector('#new-proj-name') as HTMLInputElement | null;
-    input?.focus();
-    input?.select();
+    setTimeout(() => {
+      const input = this.container.querySelector('#new-proj-name') as HTMLInputElement | null;
+      input?.focus();
+      input?.select();
+    }, 60);
   }
 
   public hide() {
     this.container.style.display = 'none';
+    this.container.innerHTML = '';
   }
 
   private render() {

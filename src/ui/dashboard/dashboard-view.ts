@@ -45,18 +45,19 @@ export class DashboardView {
     this.container.style.display = 'none';
   }
 
-  public async refresh() {
-    const user = authService.getCurrentUser();
-    const userId = user ? user.uid : 'guest_local';
-
-    await projectRepository.seedDefaultProjectsIfEmpty(userId);
-    this.projects = await projectRepository.listProjects(userId);
+  public async refresh(autoPromptNewIfEmpty: boolean = true) {
+    this.projects = await projectRepository.listProjects(this.getUserId());
 
     const validIds = new Set(this.projects.map(p => p.id));
     this.selectedIds = new Set([...this.selectedIds].filter(id => validIds.has(id)));
 
     this.render();
     this.bindEvents();
+
+    // If new user with 0 projects, automatically show "Create New Project" modal
+    if (this.projects.length === 0 && autoPromptNewIfEmpty && !this.searchQuery) {
+      this.newProjectModal.show();
+    }
   }
 
   private render() {
@@ -116,9 +117,16 @@ export class DashboardView {
                 <div class="dash-empty-icon">📐</div>
                 <h3>${this.searchQuery ? 'No matching projects found' : 'No projects created yet'}</h3>
                 <p>${this.searchQuery ? `No project names match "${this.searchQuery}". Try clearing search.` : 'Begin with a clean isometric grid or pick one of our luxury architectural templates.'}</p>
-                <button class="btn-primary-emerald" id="btn-dash-empty-new">
-                  ${this.searchQuery ? 'Clear Search Filter' : 'Create First Project'}
-                </button>
+                <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 6px;">
+                  <button class="btn-primary-emerald" id="btn-dash-empty-new">
+                    ${this.searchQuery ? 'Clear Search Filter' : '+ Create New Project'}
+                  </button>
+                  ${!this.searchQuery ? `
+                    <button class="btn-ghost-pill" id="btn-seed-samples" style="background: #f1f5f9; border: 1px solid #cbd5e1; padding: 8px 16px; border-radius: 9999px; font-weight: 600; cursor: pointer;">
+                      <span>🏛️ Explore Sample Showcase</span>
+                    </button>
+                  ` : ''}
+                </div>
               </div>
             ` : `
               <div class="dash-projects-grid" id="dash-projects-grid">
@@ -215,9 +223,13 @@ export class DashboardView {
       }
     });
 
+    this.container.querySelector('#btn-seed-samples')?.addEventListener('click', async () => {
+      await projectRepository.seedDefaultProjectsIfEmpty(this.getUserId());
+      showToast('Loaded 3 architectural showcase projects');
+      await this.refresh(false);
+    });
+
     this.container.querySelector('#btn-clean-empty-drafts')?.addEventListener('click', async () => {
-      const user = authService.getCurrentUser();
-      const userId = user ? user.uid : 'guest_local';
       const empties = this.projects.filter(p => p.wallCount === 0 && p.roomCount === 0);
       if (empties.length === 0) return;
 
@@ -227,8 +239,9 @@ export class DashboardView {
         { isDanger: true, confirmText: 'Clean Up' }
       );
       if (confirmed) {
+        const uid = this.getUserId();
         for (const p of empties) {
-          await projectRepository.deleteProject(userId, p.id);
+          await projectRepository.deleteProject(uid, p.id);
         }
         showToast(`Cleaned up ${empties.length} empty drafts`);
         await this.refresh();
@@ -257,10 +270,9 @@ export class DashboardView {
         { isDanger: true, confirmText: 'Delete Selected' }
       );
       if (confirmed) {
-        const user = authService.getCurrentUser();
-        const userId = user ? user.uid : 'guest_local';
+        const uid = this.getUserId();
         for (const id of this.selectedIds) {
-          await projectRepository.deleteProject(userId, id);
+          await projectRepository.deleteProject(uid, id);
         }
         this.selectedIds.clear();
         showToast(`Deleted ${count} project${count > 1 ? 's' : ''}`);
@@ -282,52 +294,47 @@ export class DashboardView {
     this.bindCardEvents();
   }
 
+  private getUserId(): string {
+    const user = authService.getCurrentUser();
+    return user ? user.uid : 'guest_local';
+  }
+
   private bindCardEvents() {
     const cards = this.container.querySelectorAll('.dash-project-card');
     cards.forEach(card => {
       ProjectCardRenderer.bindCardEvents(card as HTMLElement, {
         onOpen: (id) => this.callbacks.onOpenProject(id),
         onSelectToggle: (id, selected) => {
-          if (selected) {
-            this.selectedIds.add(id);
-          } else {
-            this.selectedIds.delete(id);
-          }
+          if (selected) this.selectedIds.add(id);
+          else this.selectedIds.delete(id);
           this.render();
           this.bindEvents();
         },
         onDuplicate: async (id) => {
-          const user = authService.getCurrentUser();
-          const userId = user ? user.uid : 'guest_local';
-          const dup = await projectRepository.duplicateProject(userId, id);
+          const dup = await projectRepository.duplicateProject(this.getUserId(), id);
           if (dup) {
             showToast(`Duplicated "${dup.name}"`);
             await this.refresh();
           }
         },
         onDelete: async (id) => {
-          const user = authService.getCurrentUser();
-          const userId = user ? user.uid : 'guest_local';
-          await projectRepository.deleteProject(userId, id);
+          await projectRepository.deleteProject(this.getUserId(), id);
           showToast('Project deleted');
           await this.refresh();
         },
         onRename: async (id, newName) => {
-          const user = authService.getCurrentUser();
-          const userId = user ? user.uid : 'guest_local';
-          const p = await projectRepository.getProject(userId, id);
+          const uid = this.getUserId();
+          const p = await projectRepository.getProject(uid, id);
           if (p) {
             p.state.name = newName;
             p.name = newName;
-            await projectRepository.saveProject(userId, p.state);
+            await projectRepository.saveProject(uid, p.state);
             showToast(`Renamed to "${newName}"`);
             await this.refresh();
           }
         },
         onExport: async (id) => {
-          const user = authService.getCurrentUser();
-          const userId = user ? user.uid : 'guest_local';
-          const p = await projectRepository.getProject(userId, id);
+          const p = await projectRepository.getProject(this.getUserId(), id);
           if (p) {
             exportAsAurFile(p.state, p.thumbnailUrl);
             showToast(`Exported "${p.name}".aur Archive`);

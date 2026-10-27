@@ -89,6 +89,7 @@ export class TopBarController {
 
         <div class="top-bar-divider"></div>
 
+        <button class="btn btn-sm btn-primary-emerald" id="btn-top-save" title="Save Project (Ctrl+S)">💾 Save</button>
         <button class="btn btn-sm" id="btn-file-template" title="Select Architectural Blueprint Template">📁 Templates</button>
         <button class="btn btn-sm" id="btn-file-open" title="Import .aur or JSON Blueprint">📂 Open</button>
         <input type="file" id="input-file-import" accept=".aur,.json" style="display: none;" />
@@ -119,6 +120,27 @@ export class TopBarController {
   }
 
   private bindEvents() {
+    // Save button click
+    this.container.querySelector('#btn-top-save')?.addEventListener('click', async () => {
+      await autoSaveManager.forceSaveNow();
+      showToast('Project saved successfully');
+    });
+
+    // Status badge click to trigger save
+    this.container.querySelector('#top-autosave-badge')?.addEventListener('click', async () => {
+      await autoSaveManager.forceSaveNow();
+      showToast('Project saved successfully');
+    });
+
+    // Keyboard Ctrl+S shortcut to save
+    window.addEventListener('keydown', async (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        await autoSaveManager.forceSaveNow();
+        showToast('Project saved successfully');
+      }
+    });
+
     // Back to Dashboard with immediate auto-save
     this.container.querySelector('#btn-back-dashboard')?.addEventListener('click', async () => {
       await autoSaveManager.forceSaveNow();

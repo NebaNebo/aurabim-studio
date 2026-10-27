@@ -119,10 +119,11 @@ class AuthService {
     }
 
     // Hybrid Local Fallback
+    const cleanEmail = email.trim().toLowerCase();
     const user: AuthUserProfile = {
-      uid: `local_user_${email.replace(/[^a-zA-Z0-9]/g, '_')}`,
-      email,
-      displayName: email.split('@')[0],
+      uid: `local_user_${cleanEmail.replace(/[^a-z0-9]/g, '_')}`,
+      email: cleanEmail,
+      displayName: cleanEmail.split('@')[0],
       photoURL: null,
       isGuest: false
     };
@@ -152,10 +153,11 @@ class AuthService {
     }
 
     // Hybrid Local Fallback
+    const cleanEmail = email.trim().toLowerCase();
     const user: AuthUserProfile = {
-      uid: `local_user_${Date.now()}`,
-      email,
-      displayName: name || email.split('@')[0],
+      uid: `local_user_${cleanEmail.replace(/[^a-z0-9]/g, '_')}`,
+      email: cleanEmail,
+      displayName: name || cleanEmail.split('@')[0],
       photoURL: null,
       isGuest: false
     };

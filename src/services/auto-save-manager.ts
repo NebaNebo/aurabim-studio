@@ -38,7 +38,21 @@ class AutoSaveManager {
     }
   }
 
+  public markAsSaved(state: ProjectState) {
+    if (this.debounceTimer) {
+      clearTimeout(this.debounceTimer);
+      this.debounceTimer = null;
+    }
+    this.lastSavedHash = this.computeQuickHash(state);
+    this.lastSavedTime = new Date();
+    this.setStatus('saved');
+  }
+
   private init() {
+    // Initialize hash with current state to prevent saving unwanted default dummy projects on boot
+    const initialState = projectStore.getState();
+    this.lastSavedHash = this.computeQuickHash(initialState);
+
     projectStore.subscribe((state: ProjectState) => {
       if (!this.isEnabled) return;
 
@@ -56,6 +70,12 @@ class AutoSaveManager {
         this.performSave(state, stateHash);
       }, 1500);
     });
+
+    // Synchronously flush changes to disk if user closes or reloads page
+    if (typeof window !== 'undefined') {
+      window.addEventListener('beforeunload', () => this.flushSync());
+      window.addEventListener('pagehide', () => this.flushSync());
+    }
   }
 
   private async performSave(state: ProjectState, stateHash: string) {
@@ -105,11 +125,40 @@ class AutoSaveManager {
     await this.performSave(state, hash);
   }
 
-  private computeQuickHash(state: ProjectState): string {
-    const wallKeys = Object.keys(state.walls).length;
-    const roomKeys = Object.keys(state.rooms).length;
-    const furnKeys = Object.keys(state.furniture).length;
-    return `${state.id}_${state.name}_${wallKeys}_${roomKeys}_${furnKeys}_${state.version}`;
+  /**
+   * Synchronously flushes unsaved state to LocalStorage
+   */
+  public flushSync(): void {
+    if (this.debounceTimer) {
+      clearTimeout(this.debounceTimer);
+      this.debounceTimer = null;
+    }
+    const state = projectStore.getState();
+    const stateHash = this.computeQuickHash(state);
+    if (stateHash !== this.lastSavedHash) {
+      const user = authService.getCurrentUser();
+      const userId = user ? user.uid : 'guest_local';
+      projectRepository.saveProjectSync(userId, state);
+      this.lastSavedHash = stateHash;
+      this.lastSavedTime = new Date();
+      this.setStatus('saved');
+    }
+  }
+
+  public computeQuickHash(state: ProjectState): string {
+    let nodeChecksum = 0;
+    for (const n of Object.values(state.nodes || {})) {
+      nodeChecksum = (nodeChecksum + (n.x * 31 + n.y * 17)) | 0;
+    }
+    let openingCount = 0;
+    for (const w of Object.values(state.walls || {})) {
+      openingCount += (w.openings?.length || 0);
+    }
+    const wallCount = Object.keys(state.walls || {}).length;
+    const roomCount = Object.keys(state.rooms || {}).length;
+    const furnCount = Object.keys(state.furniture || {}).length;
+    const structCount = Object.keys(state.structures || {}).length;
+    return `${state.id}_${state.name}_w${wallCount}_n${nodeChecksum}_o${openingCount}_r${roomCount}_f${furnCount}_s${structCount}`;
   }
 }
 

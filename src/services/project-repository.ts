@@ -181,6 +181,46 @@ class ProjectRepository {
   }
 
   /**
+   * Synchronously saves project to user-scoped LocalStorage mirror.
+   * Ideal for beforeunload, pagehide, and instant UI state flushes.
+   */
+  public saveProjectSync(
+    userId: string,
+    state: ProjectState,
+    thumbnailUrl?: string,
+    templateType?: string
+  ): SavedProjectItem {
+    const wallCount = Object.keys(state.walls || {}).length;
+    const roomCount = Object.keys(state.rooms || {}).length;
+    let totalAreaM2 = 0;
+    for (const r of Object.values(state.rooms || {})) {
+      totalAreaM2 += r.areaSquareMeters;
+    }
+    totalAreaM2 = Math.round(totalAreaM2 * 10) / 10;
+
+    const now = Date.now();
+    const existingRaw = safeGetItem(getProjectKey(userId, state.id));
+    const existing: SavedProjectItem | null = existingRaw ? JSON.parse(existingRaw) : null;
+
+    const projectItem: SavedProjectItem = {
+      id: state.id,
+      userId,
+      name: state.name || 'Untitled Project',
+      createdAt: existing ? existing.createdAt : now,
+      updatedAt: now,
+      thumbnailUrl: thumbnailUrl || existing?.thumbnailUrl,
+      roomCount,
+      totalAreaM2,
+      wallCount,
+      templateType: templateType || existing?.templateType || 'custom',
+      state
+    };
+
+    this.saveToLocal(userId, projectItem);
+    return projectItem;
+  }
+
+  /**
    * Deletes a project by ID from the user's workspace
    */
   public async deleteProject(userId: string, projectId: string): Promise<void> {

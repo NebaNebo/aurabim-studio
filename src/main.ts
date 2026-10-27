@@ -73,6 +73,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const p = await projectRepository.getProject(userId, projectId);
       if (p) {
         projectStore.loadProject(p.state);
+        autoSaveManager.markAsSaved(p.state);
         cadViewport.centerView();
         threeScene.fitToExtents();
         router.navigateTo('editor');
@@ -86,6 +87,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const userId = user ? user.uid : 'guest_local';
       await projectRepository.saveProject(userId, opts.initialState, undefined, opts.templateType);
       projectStore.loadProject(opts.initialState);
+      autoSaveManager.markAsSaved(opts.initialState);
       cadViewport.centerView();
       threeScene.fitToExtents();
       router.navigateTo('editor');
