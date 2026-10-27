@@ -86,6 +86,22 @@ export class CadViewport {
 
   // Render loop
   private animFrameId: number | null = null;
+  private cursorListeners: Set<(coords: Vec2, snapInfo: string, orthoInfo: string) => void> = new Set();
+
+  public onCursorMove(callback: (coords: Vec2, snapInfo: string, orthoInfo: string) => void): () => void {
+    this.cursorListeners.add(callback);
+    callback(this.currentCursorMm, `Snap: On (${this.state.settings.gridSizeMm || 100}mm)`, 'Ortho: Active');
+    return () => this.cursorListeners.delete(callback);
+  }
+
+  private notifyCursorMove() {
+    if (this.cursorListeners.size === 0) return;
+    const snapText = `Snap: On (${this.state.settings.gridSizeMm || 100}mm)`;
+    const orthoText = 'Ortho: Active';
+    for (const cb of this.cursorListeners) {
+      cb(this.currentCursorMm, snapText, orthoText);
+    }
+  }
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
@@ -439,6 +455,7 @@ export class CadViewport {
         connectedNeighbors
       );
       this.currentCursorMm = this.currentSnap.point;
+      this.notifyCursorMove();
 
       // Handle Node Dragging (real-time smooth position update)
       if (this.activeDragNodeId) {

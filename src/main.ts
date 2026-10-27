@@ -54,18 +54,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   const centerViewportElem = document.getElementById('center-viewport')!;
   new PipController(pipWindowElem, centerViewportElem, threeScene, cadViewport);
 
-  // 5. Update Status HUD Bar
-  const hudStats = document.getElementById('status-hud-stats');
-  if (hudStats) {
-    projectStore.subscribe(state => {
-      const wallCount = Object.keys(state.walls).length;
-      const roomCount = Object.keys(state.rooms).length;
-      const furnCount = Object.keys(state.furniture).length;
-      let totalAreaM2 = 0;
-      for (const r of Object.values(state.rooms)) {
-        totalAreaM2 += r.areaSquareMeters;
-      }
-      hudStats.textContent = `Walls: ${wallCount} | Rooms: ${roomCount} (${totalAreaM2.toFixed(1)} m²) | Furniture: ${furnCount}`;
+  // 5. Update Status HUD Bar Viewport Telemetry & Constraints
+  const hudCoords = document.getElementById('hud-coords');
+  const hudSnap = document.getElementById('hud-snap');
+  const hudOrtho = document.getElementById('hud-ortho');
+  if (hudCoords) {
+    cadViewport.onCursorMove((pos, snap, ortho) => {
+      hudCoords.textContent = `X: ${Math.round(pos.x).toLocaleString()} Y: ${Math.round(pos.y).toLocaleString()}`;
+      if (hudSnap) hudSnap.textContent = snap;
+      if (hudOrtho) hudOrtho.textContent = ortho;
     });
   }
 

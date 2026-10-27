@@ -79,48 +79,48 @@ export class InspectorController {
     return `
       <div class="inspector-card">
         <div class="inspector-card-title">Spatial Summary</div>
-        <div style="display: flex; flex-direction: column; gap: 8px;">
-          <div class="prop-row">
-            <span class="prop-label">Total Interior Area</span>
-            <span style="font-weight: 700; color: var(--accent-emerald-text); font-size: 13.5px;">${totalAreaM2.toFixed(1)} m²</span>
+        <div class="spatial-hero-card">
+          <div class="spatial-hero-lbl">Total Interior Area</div>
+          <div class="spatial-hero-val">${totalAreaM2.toFixed(1)} <span class="spatial-hero-unit">m²</span></div>
+        </div>
+        <div class="spatial-mini-grid">
+          <div class="spatial-mini-stat">
+            <div class="spatial-mini-num">${roomCount}</div>
+            <div class="spatial-mini-lbl">Rooms</div>
           </div>
-          <div class="prop-row">
-            <span class="prop-label">Enclosed Rooms</span>
-            <span style="font-weight: 600; color: var(--text-primary); font-size: 11.5px;">${roomCount} rooms</span>
+          <div class="spatial-mini-stat">
+            <div class="spatial-mini-num">${wallCount}</div>
+            <div class="spatial-mini-lbl">Walls</div>
           </div>
-          <div class="prop-row">
-            <span class="prop-label">Active Walls</span>
-            <span style="font-weight: 600; color: var(--text-primary); font-size: 11.5px;">${wallCount} walls</span>
-          </div>
-          <div class="prop-row">
-            <span class="prop-label">Furniture Items</span>
-            <span style="font-weight: 600; color: var(--text-primary); font-size: 11.5px;">${furnCount} items</span>
+          <div class="spatial-mini-stat">
+            <div class="spatial-mini-num">${furnCount}</div>
+            <div class="spatial-mini-lbl">Items</div>
           </div>
         </div>
       </div>
 
       <div class="inspector-card">
         <div class="inspector-card-title">BIM Dimensions</div>
-        <div style="display: flex; flex-direction: column; gap: 8px;">
+        <div class="prop-group">
           <div class="prop-row">
             <span class="prop-label">Wall Height</span>
-            <div style="display: flex; align-items: center; gap: 4px;">
+            <div class="prop-input-well">
               <input type="number" class="prop-input" id="set-wall-h" value="${state.settings.wallHeight}" step="50" />
-              <span style="font-size: 10px; color: var(--text-muted);">mm</span>
+              <span class="prop-unit">mm</span>
             </div>
           </div>
           <div class="prop-row">
             <span class="prop-label">Wall Thickness</span>
-            <div style="display: flex; align-items: center; gap: 4px;">
+            <div class="prop-input-well">
               <input type="number" class="prop-input" id="set-wall-t" value="${state.settings.wallThickness}" step="10" />
-              <span style="font-size: 10px; color: var(--text-muted);">mm</span>
+              <span class="prop-unit">mm</span>
             </div>
           </div>
           <div class="prop-row">
             <span class="prop-label">Slab Thickness</span>
-            <div style="display: flex; align-items: center; gap: 4px;">
+            <div class="prop-input-well">
               <input type="number" class="prop-input" id="set-slab-t" value="${state.settings.slabThickness}" step="10" />
-              <span style="font-size: 10px; color: var(--text-muted);">mm</span>
+              <span class="prop-unit">mm</span>
             </div>
           </div>
         </div>
@@ -128,19 +128,19 @@ export class InspectorController {
 
       <div class="inspector-card">
         <div class="inspector-card-title">Grid & Snapping</div>
-        <div style="display: flex; flex-direction: column; gap: 8px;">
+        <div class="prop-group">
           <div class="prop-row">
             <span class="prop-label">Snap Grid</span>
-            <div style="display: flex; align-items: center; gap: 4px;">
+            <div class="prop-input-well">
               <input type="number" class="prop-input" id="set-grid-size" value="${state.settings.gridSizeMm || 100}" step="50" />
-              <span style="font-size: 10px; color: var(--text-muted);">mm</span>
+              <span class="prop-unit">mm</span>
             </div>
           </div>
           <div class="prop-row">
             <span class="prop-label">Snap Angle</span>
-            <div style="display: flex; align-items: center; gap: 4px;">
+            <div class="prop-input-well">
               <input type="number" class="prop-input" id="set-snap-angle" value="${state.settings.snapAngleDeg || 45}" step="15" />
-              <span style="font-size: 10px; color: var(--text-muted);">deg</span>
+              <span class="prop-unit">deg</span>
             </div>
           </div>
         </div>

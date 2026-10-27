@@ -31,61 +31,174 @@
   font-family: var(--font-mono);
   font-size: 10px;
   font-weight: 600;
-  color: var(--text-muted);
+  color: #8E8E99;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   padding-bottom: 4px;
   border-bottom: 1px solid var(--border-hairline);
 }
 
+/* Spatial Summary Hero & Mini Grid */
+.spatial-hero-card {
+  background: #FFFFFF;
+  border: 1px solid #DCDAD0;
+  border-radius: 8px;
+  padding: 12px;
+  text-align: center;
+}
+
+.spatial-hero-lbl {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  color: #8E8E99;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 2px;
+}
+
+.spatial-hero-val {
+  font-family: 'Space Grotesk', var(--font-display, var(--font-sans));
+  font-size: 22px;
+  font-weight: 600;
+  color: #18181B;
+  line-height: 1.2;
+}
+
+.spatial-hero-unit {
+  font-size: 13px;
+  font-weight: 500;
+  color: #8E8E99;
+}
+
+.spatial-mini-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.spatial-mini-stat {
+  background: #FFFFFF;
+  border: 1px solid #DCDAD0;
+  border-radius: 6px;
+  padding: 6px 4px;
+  text-align: center;
+}
+
+.spatial-mini-num {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 600;
+  color: #18181B;
+}
+
+.spatial-mini-lbl {
+  font-size: 10px;
+  color: #8E8E99;
+  white-space: nowrap;
+}
+
+/* Property Groups and Single-Line Strictness */
+.prop-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
 .prop-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  height: 30px;
   gap: 8px;
 }
 
 .prop-label {
-  font-size: 11.5px;
-  color: var(--text-secondary);
+  white-space: nowrap;
+  font-size: 12px;
+  color: #52525B;
   font-weight: 500;
 }
 
-/* Recessed Numeric Input (28px height - Section 6.2) */
+/* Recessed Numeric Input Well (width: 96px, height: 28px) */
+.prop-input-well,
 .prop-input-wrap {
-  position: relative;
   width: 96px;
+  height: 28px;
+  background: #E6E4DD;
+  border: 1px solid #DCDAD0;
+  border-radius: 6px;
+  padding: 0 8px;
   display: flex;
   align-items: center;
+  box-sizing: border-box;
+  transition: all 0.12s ease;
 }
 
+.prop-input-well:focus-within,
+.prop-input-wrap:focus-within {
+  border-color: #D94E3B;
+  box-shadow: 0 0 0 1px #D94E3B;
+  background: #FFFFFF;
+}
+
+.prop-input-well .prop-input,
+.prop-input-wrap .prop-input,
 .prop-input {
   width: 100%;
-  height: 28px;
-  padding: 0 24px 0 8px;
-  background: var(--bg-input);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-input);
-  color: var(--text-primary);
+  height: 100%;
+  padding: 0 4px 0 0;
+  text-align: right;
+  background: transparent;
+  border: none;
+  color: #18181B;
   font-family: var(--font-mono);
   font-size: 12px;
   font-variant-numeric: tabular-nums;
   outline: none;
-  transition: all 0.12s ease;
 }
 
-.prop-input:focus {
-  border-color: var(--accent-telemetry);
-  box-shadow: 0 0 0 2px var(--accent-telemetry-soft);
-}
-
+.prop-input-well .prop-unit,
+.prop-input-wrap .prop-unit,
 .prop-unit {
-  position: absolute;
-  right: 6px;
   font-family: var(--font-mono);
   font-size: 10px;
-  font-weight: 500;
-  color: var(--text-muted);
-  pointer-events: none;
+  color: #8E8E99;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+/* Dark Mode Overrides */
+[data-theme="dark"] .spatial-hero-card,
+[data-theme="dark"] .spatial-mini-stat {
+  background: #18191c;
+  border-color: #2e3035;
+}
+
+[data-theme="dark"] .spatial-hero-val,
+[data-theme="dark"] .spatial-mini-num {
+  color: #f4f4f5;
+}
+
+[data-theme="dark"] .prop-label {
+  color: #a1a1aa;
+}
+
+[data-theme="dark"] .prop-input-well,
+[data-theme="dark"] .prop-input-wrap {
+  background: #1f2126;
+  border-color: #2e3035;
+}
+
+[data-theme="dark"] .prop-input-well:focus-within,
+[data-theme="dark"] .prop-input-wrap:focus-within {
+  background: #252830;
+  border-color: #D94E3B;
+}
+
+[data-theme="dark"] .prop-input-well .prop-input,
+[data-theme="dark"] .prop-input-wrap .prop-input,
+[data-theme="dark"] .prop-input {
+  color: #f4f4f5;
 }

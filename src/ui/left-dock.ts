@@ -191,6 +191,18 @@ export class LeftDockController {
       });
     });
 
+    // Subbadge pill clicks: explicitly toggle accordion tray
+    this.container.querySelectorAll('.tool-card-subbadge').forEach(badge => {
+      badge.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const card = badge.closest('.tool-card') as HTMLElement | null;
+        const group = card?.nextElementSibling as HTMLElement | null;
+        if (group && group.classList.contains('tool-subchip-group')) {
+          group.classList.toggle('expanded');
+        }
+      });
+    });
+
     // Blueprint File Input
     const fileInput = this.container.querySelector('#blueprint-file-input') as HTMLInputElement | null;
     this.container.querySelector('#tile-import-blueprint')?.addEventListener('click', () => {
@@ -323,6 +335,7 @@ export class LeftDockController {
       }
 
       el.classList.toggle('active', isActive);
+      el.setAttribute('data-active', isActive ? 'true' : 'false');
     });
 
     this.container.querySelectorAll('.catalog-item-card').forEach(el => {
