@@ -241,17 +241,10 @@ export class DashboardView {
     this.container.querySelector('#btn-clean-empty-drafts')?.addEventListener('click', async () => {
       const empties = this.projects.filter(p => p.wallCount === 0 && p.roomCount === 0);
       if (empties.length === 0) return;
-
-      const confirmed = await customConfirm(
-        'Clean Up Empty Drafts',
-        `Remove ${empties.length} empty draft designs with 0 walls?`,
-        { isDanger: true, confirmText: 'Clean Up' }
-      );
+      const confirmed = await customConfirm('Clean Up Empty Drafts', `Remove ${empties.length} empty drafts with 0 walls?`, { isDanger: true, confirmText: 'Clean Up' });
       if (confirmed) {
         const uid = this.getUserId();
-        for (const p of empties) {
-          await projectRepository.deleteProject(uid, p.id);
-        }
+        for (const p of empties) await projectRepository.deleteProject(uid, p.id);
         showToast(`Cleaned up ${empties.length} empty drafts`);
         await this.refresh();
       }
@@ -293,11 +286,9 @@ export class DashboardView {
       const confirmed = await customConfirm(
         'Sign Out of AuraBIM Studio',
         'Are you sure you want to sign out of your workspace session?',
-        { confirmText: 'Sign Out' }
+        { confirmText: 'Sign Out', icon: ICONS.signout, type: 'info' }
       );
-      if (confirmed) {
-        this.callbacks.onSignOut();
-      }
+      if (confirmed) this.callbacks.onSignOut();
     });
 
     this.bindCardEvents();

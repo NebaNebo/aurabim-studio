@@ -8,6 +8,7 @@ export interface DialogOptions {
   confirmText?: string;
   cancelText?: string;
   isDanger?: boolean;
+  icon?: string;
 }
 
 export interface PromptOptions extends DialogOptions {
@@ -27,7 +28,7 @@ export function customAlert(
 
     const rawType = opts.type || 'info';
     const iconType = rawType === 'error' ? 'danger' : rawType;
-    const iconSvg = iconType === 'danger' || iconType === 'warning' ? ICONS.trash : iconType === 'success' ? ICONS.check : ICONS.brandLogo;
+    const iconSvg = opts.icon || (iconType === 'danger' ? ICONS.trash : iconType === 'warning' ? ICONS.alertTriangle : iconType === 'success' ? ICONS.check : ICONS.info);
 
     backdrop.innerHTML = `
       <div class="custom-dialog-card" role="alertdialog" aria-labelledby="dialog-title" aria-describedby="dialog-msg">
@@ -78,8 +79,8 @@ export function customConfirm(
     backdrop.className = 'custom-dialog-backdrop';
 
     const isDanger = opts.isDanger || opts.type === 'danger';
-    const iconType = isDanger ? 'danger' : opts.type || 'warning';
-    const iconSvg = isDanger ? ICONS.trash : ICONS.targetCenter;
+    const iconType = isDanger ? 'danger' : (opts.type || 'info');
+    const iconSvg = opts.icon || (isDanger ? ICONS.trash : (opts.type === 'warning' ? ICONS.alertTriangle : ICONS.info));
     const confirmBtnClass = isDanger ? 'dialog-btn-danger' : 'dialog-btn-primary';
 
     backdrop.innerHTML = `

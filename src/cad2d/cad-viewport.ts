@@ -796,11 +796,11 @@ export class CadViewport {
             input.focus();
             input.select();
           }
-          showToast('✏️ Edit room name & floor finish in Right Inspector');
+          showToast('Edit room name & floor finish in Right Inspector');
         } else {
           // [ Split area ] clicked: activate partition wall tool to divide room
           projectStore.setActiveTool('partition_wall');
-          showToast('✂️ Split area: Click two points across room to place a dividing partition wall');
+          showToast('Split Area: Click two points across room to place a dividing partition wall');
         }
         this.requestRender();
         return;
@@ -1447,52 +1447,82 @@ export class CadViewport {
         ctx.shadowBlur = 10;
         ctx.shadowOffsetY = 3;
 
+        const isDarkTheme = document.documentElement.getAttribute('data-theme') !== 'light';
+
         // Container Background
-        ctx.fillStyle = '#ffffff';
+        ctx.fillStyle = isDarkTheme ? '#1c1e24' : '#ffffff';
         ctx.beginPath();
-        ctx.roundRect(pillX, pillY, pillW, pillH, 6);
+        ctx.roundRect(pillX, pillY, pillW, pillH, 8);
         ctx.fill();
         ctx.restore();
 
         // Border
         ctx.save();
-        ctx.strokeStyle = '#e2e8f0';
+        ctx.strokeStyle = isDarkTheme ? '#2d313b' : '#dcdad0';
         ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.roundRect(pillX, pillY, pillW, pillH, 6);
+        ctx.roundRect(pillX, pillY, pillW, pillH, 8);
         ctx.stroke();
 
         // Hover highlight
         if (this.hoveredPillSection === 'edit') {
-          ctx.fillStyle = '#f1f5f9';
+          ctx.fillStyle = isDarkTheme ? 'rgba(255, 255, 255, 0.08)' : '#f4f3ef';
           ctx.beginPath();
-          ctx.roundRect(pillX + 1, pillY + 1, pillW / 2 - 1, pillH - 2, [5, 0, 0, 5]);
+          ctx.roundRect(pillX + 1, pillY + 1, pillW / 2 - 1, pillH - 2, [7, 0, 0, 7]);
           ctx.fill();
         } else if (this.hoveredPillSection === 'split') {
-          ctx.fillStyle = '#f1f5f9';
+          ctx.fillStyle = isDarkTheme ? 'rgba(255, 255, 255, 0.08)' : '#f4f3ef';
           ctx.beginPath();
-          ctx.roundRect(pillX + pillW / 2, pillY + 1, pillW / 2 - 1, pillH - 2, [0, 5, 5, 0]);
+          ctx.roundRect(pillX + pillW / 2, pillY + 1, pillW / 2 - 1, pillH - 2, [0, 7, 7, 0]);
           ctx.fill();
         }
 
         // Divider
-        ctx.strokeStyle = '#e2e8f0';
+        ctx.strokeStyle = isDarkTheme ? '#2d313b' : '#dcdad0';
         ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.moveTo(pillX + pillW / 2, pillY + 6);
         ctx.lineTo(pillX + pillW / 2, pillY + pillH - 6);
         ctx.stroke();
 
-        // Text & Icons
-        ctx.font = '600 11.5px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-        ctx.textAlign = 'center';
+        // Vector Icon & Text for Edit
+        const textColor = isDarkTheme ? '#f3f4f6' : '#18181b';
+        const mutedColor = isDarkTheme ? '#9ca3af' : '#71717a';
+
+        ctx.strokeStyle = this.hoveredPillSection === 'edit' ? '#e05a47' : mutedColor;
+        ctx.lineWidth = 1.4;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+
+        const editIcoX = pillX + 18;
+        const editIcoY = pillY + pillH / 2;
+        ctx.beginPath();
+        ctx.moveTo(editIcoX - 4, editIcoY + 4);
+        ctx.lineTo(editIcoX + 2, editIcoY - 3);
+        ctx.lineTo(editIcoX + 4, editIcoY - 1);
+        ctx.lineTo(editIcoX - 2, editIcoY + 5);
+        ctx.closePath();
+        ctx.stroke();
+
+        ctx.font = '500 11.5px Inter, -apple-system, sans-serif';
+        ctx.textAlign = 'left';
         ctx.textBaseline = 'middle';
+        ctx.fillStyle = this.hoveredPillSection === 'edit' ? (isDarkTheme ? '#ffffff' : '#000000') : textColor;
+        ctx.fillText('Edit', editIcoX + 8, editIcoY);
 
-        ctx.fillStyle = this.hoveredPillSection === 'edit' ? '#0f172a' : '#334155';
-        ctx.fillText('✏️ Edit', pillX + pillW / 4, pillY + pillH / 2);
+        // Vector Icon & Text for Split Area
+        ctx.strokeStyle = this.hoveredPillSection === 'split' ? '#e05a47' : mutedColor;
+        const splitIcoX = pillX + pillW / 2 + 16;
+        const splitIcoY = pillY + pillH / 2;
+        ctx.beginPath();
+        ctx.moveTo(splitIcoX - 3, splitIcoY - 4);
+        ctx.lineTo(splitIcoX + 3, splitIcoY + 4);
+        ctx.moveTo(splitIcoX + 3, splitIcoY - 4);
+        ctx.lineTo(splitIcoX - 3, splitIcoY + 4);
+        ctx.stroke();
 
-        ctx.fillStyle = this.hoveredPillSection === 'split' ? '#0f172a' : '#334155';
-        ctx.fillText('✂️ Split area', pillX + (pillW * 3) / 4, pillY + pillH / 2);
+        ctx.fillStyle = this.hoveredPillSection === 'split' ? (isDarkTheme ? '#ffffff' : '#000000') : textColor;
+        ctx.fillText('Split Area', splitIcoX + 8, splitIcoY);
         ctx.restore();
       }
 

@@ -1,6 +1,7 @@
 import { authService, AuthUserProfile } from '../../services/auth-service';
 import { showToast } from '../toast-notifier';
 import { customPrompt, customAlert } from '../custom-dialog';
+import { ICONS } from '../icons';
 import flutedGlassUrl from '../../assets/auth/fluted_glass_texture.jpg';
 
 const EYE_OPEN_SVG = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>`;
@@ -39,7 +40,7 @@ export class AuthModal {
     this.container.innerHTML = `
       <div class="auth-backdrop">
         <div class="auth-split-card" role="dialog" aria-labelledby="auth-title">
-          <button class="auth-close-btn" id="btn-close-auth" title="Dismiss modal">✕</button>
+          <button class="auth-close-btn" id="btn-close-auth" title="Dismiss modal">${ICONS.close}</button>
 
           <!-- Left Form Column -->
           <div class="auth-form-column">
