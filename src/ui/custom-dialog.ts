@@ -14,6 +14,8 @@ export interface PromptOptions extends DialogOptions {
   placeholder?: string;
 }
 
+import { ICONS } from './icons';
+
 export function customAlert(
   title: string,
   message: string,
@@ -25,12 +27,12 @@ export function customAlert(
 
     const rawType = opts.type || 'info';
     const iconType = rawType === 'error' ? 'danger' : rawType;
-    const iconSymbol = iconType === 'danger' ? '⚠️' : iconType === 'warning' ? '⚠️' : iconType === 'success' ? '✓' : '🏛️';
+    const iconSvg = iconType === 'danger' || iconType === 'warning' ? ICONS.trash : iconType === 'success' ? ICONS.check : ICONS.brandLogo;
 
     backdrop.innerHTML = `
       <div class="custom-dialog-card" role="alertdialog" aria-labelledby="dialog-title" aria-describedby="dialog-msg">
         <div class="custom-dialog-header">
-          <div class="custom-dialog-icon ${iconType}">${iconSymbol}</div>
+          <div class="custom-dialog-icon ${iconType}">${iconSvg}</div>
           <div class="custom-dialog-text">
             <h3 class="custom-dialog-title" id="dialog-title">${escapeHtml(title)}</h3>
             <p class="custom-dialog-message" id="dialog-msg">${escapeHtml(message)}</p>
@@ -77,13 +79,13 @@ export function customConfirm(
 
     const isDanger = opts.isDanger || opts.type === 'danger';
     const iconType = isDanger ? 'danger' : opts.type || 'warning';
-    const iconSymbol = isDanger ? '🗑️' : '⚠️';
+    const iconSvg = isDanger ? ICONS.trash : ICONS.targetCenter;
     const confirmBtnClass = isDanger ? 'dialog-btn-danger' : 'dialog-btn-primary';
 
     backdrop.innerHTML = `
       <div class="custom-dialog-card" role="dialog" aria-labelledby="dialog-title" aria-describedby="dialog-msg">
         <div class="custom-dialog-header">
-          <div class="custom-dialog-icon ${iconType}">${iconSymbol}</div>
+          <div class="custom-dialog-icon ${iconType}">${iconSvg}</div>
           <div class="custom-dialog-text">
             <h3 class="custom-dialog-title" id="dialog-title">${escapeHtml(title)}</h3>
             <p class="custom-dialog-message" id="dialog-msg">${escapeHtml(message)}</p>
@@ -143,7 +145,7 @@ export function customPrompt(
     backdrop.innerHTML = `
       <div class="custom-dialog-card" role="dialog" aria-labelledby="dialog-title">
         <div class="custom-dialog-header">
-          <div class="custom-dialog-icon info">🏷️</div>
+          <div class="custom-dialog-icon info">${ICONS.tag}</div>
           <div class="custom-dialog-text">
             <h3 class="custom-dialog-title" id="dialog-title">${escapeHtml(title)}</h3>
             <p class="custom-dialog-message">${escapeHtml(message)}</p>

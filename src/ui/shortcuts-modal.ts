@@ -1,3 +1,5 @@
+import { ICONS } from './icons';
+
 /**
  * Keyboard & Mouse Shortcuts Reference Modal
  */
@@ -7,8 +9,11 @@ export function openShortcutsModal() {
   overlay.innerHTML = `
     <div class="modal-box" style="max-width: 480px;">
       <div class="modal-header">
-        <span class="modal-title">⌨️ Keyboard & Mouse Controls</span>
-        <button class="btn btn-sm btn-icon" id="modal-close">✕</button>
+        <span class="modal-title" style="display: flex; align-items: center; gap: 8px;">
+          ${ICONS.keyboard}
+          <span>Keyboard & Mouse Shortcuts</span>
+        </span>
+        <button class="btn btn-sm btn-icon" id="modal-close">${ICONS.close}</button>
       </div>
       <div class="modal-body" style="gap: 10px; font-size: 12px;">
         <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border-subtle);">
@@ -45,7 +50,7 @@ export function openShortcutsModal() {
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-sm btn-primary" id="modal-ok">Got it</button>
+        <button class="btn btn-sm btn-primary-terracotta" id="modal-ok">Got it</button>
       </div>
     </div>
   `;

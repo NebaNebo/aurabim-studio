@@ -1,14 +1,14 @@
 /* ==========================================================================
-   AuraBIM Studio — New Project Modal & Template Picker (Apple HIG)
-   Liquid Glass backdrop, architectural grid, & clear visual hierarchy
+   AuraBIM Studio — New Project Modal & Template Picker (DESIGN_SYSTEM.md v2.0)
+   Tactile Architectural Station, Specular Highlights & Theme-Adaptive Cards
    ========================================================================== */
 
 .new-proj-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.42);
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  background: rgba(13, 14, 17, 0.65);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -19,45 +19,54 @@
 .new-proj-card {
   width: 100%;
   max-width: 680px;
-  background: rgba(255, 255, 255, 0.96);
-  backdrop-filter: blur(32px) saturate(190%);
-  -webkit-backdrop-filter: blur(32px) saturate(190%);
-  border-radius: var(--radius-xl, 20px);
-  box-shadow: 0 28px 64px rgba(0, 0, 0, 0.18), 0 6px 16px rgba(0, 0, 0, 0.05), inset 0 0 0 1px rgba(255, 255, 255, 0.7);
-  border: 1px solid rgba(226, 232, 240, 0.85);
-  padding: 32px;
-  animation: modalIn 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  background: var(--bg-panel);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-hud);
+  border: 1px solid var(--border-strong);
+  padding: 30px;
+  animation: modalIn 0.24s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
+}
+
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 .new-proj-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 22px;
+  margin-bottom: 20px;
 }
 
 .new-proj-title {
-  font-size: 21px;
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  color: #1d1d1f;
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
   margin-bottom: 4px;
 }
 
 .new-proj-subtitle {
-  font-size: 13px;
-  color: #6e6e73;
+  font-size: 12.5px;
+  color: var(--text-secondary);
 }
 
 .new-proj-close-btn {
-  background: #f1f5f9;
-  border: none;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  font-size: 13px;
-  color: #64748b;
+  color: var(--text-muted);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -66,66 +75,69 @@
 }
 
 .new-proj-close-btn:hover {
-  background: #e2e8f0;
-  color: #0f172a;
+  background: var(--bg-surface-hover);
+  color: var(--text-primary);
+  border-color: var(--border-strong);
 }
 
 .new-proj-field {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  margin-bottom: 22px;
+  margin-bottom: 20px;
 }
 
 .new-proj-label {
-  font-size: 11px;
-  font-weight: 700;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: #52525b;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
 }
 
 .new-proj-input {
-  height: 44px;
-  padding: 0 16px;
-  font-size: 14.5px;
-  font-weight: 600;
-  border: 1px solid #d4d4d8;
-  border-radius: 10px;
+  height: 40px;
+  padding: 0 14px;
+  font-size: 13.5px;
+  font-weight: 500;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
   outline: none;
-  background: #ffffff;
-  color: #1d1d1f;
-  transition: all 0.16s ease;
+  background: var(--bg-input);
+  color: var(--text-primary);
+  transition: all 0.15s ease;
 }
 
 .new-proj-input:focus {
-  border-color: #0071e3;
-  box-shadow: 0 0 0 3.5px rgba(0, 113, 227, 0.2);
+  border-color: var(--accent-telemetry);
+  box-shadow: 0 0 0 2px var(--accent-telemetry-soft);
 }
 
 .template-section-label {
-  font-size: 11px;
-  font-weight: 700;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: #52525b;
-  margin-bottom: 12px;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-bottom: 10px;
 }
 
 .template-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 14px;
-  margin-bottom: 26px;
+  gap: 12px;
+  margin-bottom: 24px;
 }
 
 .template-card {
-  border: 1.5px solid #e2e8f0;
-  border-radius: 14px;
-  padding: 18px 16px;
-  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 16px 14px;
+  background: var(--bg-surface);
   cursor: pointer;
-  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.15s ease;
   display: flex;
   flex-direction: column;
   gap: 5px;
@@ -133,72 +145,85 @@
 }
 
 .template-card:hover {
-  border-color: #94a3b8;
-  background: #f8fafc;
+  border-color: var(--border-strong);
+  background: var(--bg-surface-hover);
   transform: translateY(-1px);
 }
 
 .template-card.active {
-  border-color: #1b4d3e;
-  background: #f0fdf4;
-  box-shadow: 0 0 0 2px rgba(27, 77, 62, 0.2);
+  border-color: var(--accent-primary);
+  background: var(--accent-primary-soft);
 }
 
 .template-card-icon {
-  font-size: 24px;
+  width: 28px;
+  height: 28px;
+  color: var(--accent-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-bottom: 2px;
-  line-height: 1;
 }
 
 .template-card-name {
-  font-size: 14px;
-  font-weight: 750;
+  font-size: 13.5px;
+  font-weight: 600;
   letter-spacing: -0.01em;
-  color: #1d1d1f;
+  color: var(--text-primary);
 }
 
 .template-card-desc {
-  font-size: 11.5px;
-  color: #64748b;
-  line-height: 1.45;
-  margin-bottom: 6px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  margin-bottom: 4px;
 }
 
 .template-card-pill {
   align-self: flex-start;
-  font-size: 10px;
-  font-weight: 700;
-  padding: 2.5px 8px;
-  border-radius: 9999px;
-  background: #f1f5f9;
-  color: #475569;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: var(--radius-full);
+  background: var(--bg-input);
+  color: var(--text-muted);
+  border: 1px solid var(--border-subtle);
 }
 
 .template-card-pill.popular {
-  background: #e8f5e9;
-  color: #1b5e20;
+  background: var(--accent-primary-soft);
+  color: var(--accent-primary);
+  border-color: var(--accent-primary);
 }
 
 .new-proj-footer {
   display: flex;
   justify-content: flex-end;
-  gap: 12px;
+  gap: 10px;
 }
 
 .new-proj-footer .btn-secondary {
-  height: 40px;
-  padding: 0 18px;
-  background: #f1f5f9;
-  color: #475569;
-  border: none;
-  border-radius: 10px;
-  font-size: 13px;
-  font-weight: 600;
+  height: 38px;
+  padding: 0 16px;
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  font-size: 12.5px;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .new-proj-footer .btn-secondary:hover {
-  background: #e2e8f0;
-  color: #0f172a;
+  background: var(--bg-surface-hover);
+  color: var(--text-primary);
+  border-color: var(--border-strong);
+}
+
+.new-proj-footer .btn-primary-terracotta {
+  height: 38px;
+  padding: 0 18px;
+  border-radius: var(--radius-md);
 }

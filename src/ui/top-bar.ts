@@ -7,6 +7,7 @@ import { openTemplateModal } from './template-picker-modal';
 import { autoSaveManager, AutoSaveStatus } from '../services/auto-save-manager';
 import { exportAsAurFile, parseAurOrJson } from '../core/aur-file-system';
 import { customAlert, customConfirm } from './custom-dialog';
+import { ICONS } from './icons';
 
 export class TopBarController {
   private container: HTMLElement;
@@ -25,7 +26,7 @@ export class TopBarController {
     this.cadViewport = cadViewport;
     this.onBackToDashboard = onBackToDashboard;
 
-    // Pointer Event Isolation: Stop propagation so top-bar clicks never trigger canvas drawing
+    // Pointer Event Isolation
     const stopEvents = ['pointerdown', 'mousedown', 'touchstart', 'click', 'dblclick', 'wheel'];
     for (const evt of stopEvents) {
       this.container.addEventListener(evt, e => e.stopPropagation());
@@ -48,91 +49,129 @@ export class TopBarController {
 
       if (status === 'saving') {
         text.textContent = 'Saving...';
-        if (dot) dot.style.backgroundColor = '#f59e0b';
+        if (dot) dot.style.backgroundColor = 'var(--status-warning)';
         badge.classList.add('saving');
       } else if (status === 'saved') {
-        text.textContent = 'Cloud Synced';
-        if (dot) dot.style.backgroundColor = '#10b981';
+        text.textContent = 'Synced';
+        if (dot) dot.style.backgroundColor = 'var(--status-online)';
         badge.classList.remove('saving');
       } else if (status === 'error') {
-        text.textContent = 'Local (Offline)';
-        if (dot) dot.style.backgroundColor = '#94a3b8';
+        text.textContent = 'Offline';
+        if (dot) dot.style.backgroundColor = 'var(--text-disabled)';
         badge.classList.remove('saving');
       } else {
         text.textContent = 'Saved';
-        if (dot) dot.style.backgroundColor = '#10b981';
+        if (dot) dot.style.backgroundColor = 'var(--status-online)';
       }
     });
   }
 
   private render() {
     const currentState = projectStore.getState();
+    const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+
     this.container.innerHTML = `
       <div class="top-bar-section">
-        <button class="btn btn-sm btn-ghost" id="btn-back-dashboard" title="Return to Projects Dashboard">
-          <span style="font-size: 13px;">←</span>
-          <span>Dashboard</span>
+        <button class="btn btn-sm btn-ghost" id="btn-back-dashboard" title="Return to Projects Hub">
+          <span class="btn-icon">${ICONS.arrowLeft}</span>
+          <span>Hub</span>
         </button>
 
         <div class="studio-brand">
-          <span class="studio-logo-icon">🏛️</span>
+          <span class="studio-logo-icon">${ICONS.brandLogo}</span>
           <span class="studio-logo-name">AuraBIM</span>
           <span class="studio-status-badge" id="top-autosave-badge">
             <span class="studio-status-dot"></span>
-            <span id="top-autosave-text">Saved</span>
+            <span id="top-autosave-text">Synced</span>
           </span>
         </div>
 
         <div class="project-title-wrapper">
-          <input type="text" class="project-title-input" id="input-project-title" value="${currentState.name || 'Studio Apartment'}" title="Click to rename project" />
+          <input
+            type="text"
+            class="project-title-input"
+            id="input-project-title"
+            value="${currentState.name || 'Studio Apartment'}"
+            title="Click to rename project"
+          />
         </div>
 
         <div class="top-bar-divider"></div>
 
-        <button class="btn btn-sm btn-primary-emerald" id="btn-top-save" title="Save Project (Ctrl+S)">💾 Save</button>
-        <button class="btn btn-sm" id="btn-file-template" title="Select Architectural Blueprint Template">📁 Templates</button>
-        <button class="btn btn-sm" id="btn-file-open" title="Import .aur or JSON Blueprint">📂 Open</button>
+        <!-- Quiet Utility Bar -->
+        <button class="btn btn-sm btn-ghost-cad" id="btn-top-save" title="Save Project (Ctrl+S)">
+          <span class="btn-icon">${ICONS.save}</span>
+          <span>Save</span>
+        </button>
+        <button class="btn btn-sm btn-ghost-cad" id="btn-file-template" title="Architectural Blueprint Templates">
+          <span class="btn-icon">${ICONS.templateFolder}</span>
+          <span>Templates</span>
+        </button>
+        <button class="btn btn-sm btn-ghost-cad" id="btn-file-open" title="Import .aur or JSON Blueprint">
+          <span class="btn-icon">${ICONS.folderOpen}</span>
+          <span>Open</span>
+        </button>
         <input type="file" id="input-file-import" accept=".aur,.json" style="display: none;" />
-        <button class="btn btn-sm" id="btn-file-export" title="Export .aur Project Archive">💾 Export .aur</button>
-        <button class="btn btn-sm" id="btn-export-png" title="Export 2D Blueprint as High-Res PNG">📐 Blueprint</button>
+        <button class="btn btn-sm btn-ghost-cad" id="btn-file-export" title="Export .aur Project Archive">
+          <span class="btn-icon">${ICONS.exportFile}</span>
+          <span>Export .aur</span>
+        </button>
+        <button class="btn btn-sm btn-ghost-cad" id="btn-export-png" title="Export High-Res PNG Blueprint">
+          <span class="btn-icon">${ICONS.blueprint}</span>
+          <span>Blueprint</span>
+        </button>
+        <button class="btn btn-sm btn-ghost-cad btn-clear-cad" id="btn-clear" title="Clear Canvas">
+          <span class="btn-icon">${ICONS.broom}</span>
+          <span>Clear</span>
+        </button>
       </div>
 
+      <!-- Recessed View Switcher -->
       <div class="top-bar-section">
         <div class="segmented-control" id="top-view-mode-toggle">
           <button class="seg-btn active" data-vmode="2d_main" id="btn-view-2d" title="2D CAD Drafting View">2D CAD</button>
-          <button class="seg-btn" data-vmode="3d_main" id="btn-view-3d" title="3D Realistic Preview">3D View</button>
-          <button class="seg-btn" data-vmode="split" id="btn-view-split" title="Side-by-side 2D & 3D Split View">◫ Split Screen</button>
+          <button class="seg-btn" data-vmode="3d_main" id="btn-view-3d" title="3D Realistic Spatial Preview">3D View</button>
+          <button class="seg-btn" data-vmode="split" id="btn-view-split" title="Side-by-side Split View">
+            <span class="btn-icon" style="margin-right: 4px;">${ICONS.splitScreen}</span>
+            <span>Split Screen</span>
+          </button>
         </div>
       </div>
 
+      <!-- Actions & Render CTA -->
       <div class="top-bar-section">
-        <button class="btn btn-icon btn-sm" id="btn-undo" title="Undo (Ctrl+Z)">↩</button>
-        <button class="btn btn-icon btn-sm" id="btn-redo" title="Redo (Ctrl+Y)">↪</button>
-        <button class="btn btn-sm btn-danger" id="btn-clear" title="Clear Canvas">🧹 Clear</button>
+        <button class="btn btn-icon btn-sm" id="btn-undo" title="Undo (Ctrl+Z)">${ICONS.undo}</button>
+        <button class="btn btn-icon btn-sm" id="btn-redo" title="Redo (Ctrl+Y)">${ICONS.redo}</button>
 
         <div class="top-bar-divider"></div>
 
-        <button class="btn btn-sm" id="btn-shortcuts" title="Keyboard Shortcuts & Controls">⌨️ Shortcuts</button>
-        <button class="btn btn-icon btn-sm" id="btn-fullscreen" title="Toggle Fullscreen">⛶</button>
-        <button class="btn btn-sm btn-primary btn-pill" id="btn-snapshot-3d" title="Capture High-Resolution 3D Snapshot">📷 Render 3D</button>
+        <button class="btn btn-icon btn-sm" id="btn-top-theme" title="Toggle Theme (Obsidian / Alabaster)">
+          ${isDark ? ICONS.themeSun : ICONS.themeMoon}
+        </button>
+        <button class="btn btn-sm btn-ghost-cad" id="btn-shortcuts" title="Keyboard Shortcuts">
+          <span class="btn-icon">${ICONS.keyboard}</span>
+          <span>[?]</span>
+        </button>
+        <button class="btn btn-icon btn-sm" id="btn-fullscreen" title="Toggle Fullscreen">${ICONS.fullscreen}</button>
+        <button class="btn btn-sm btn-primary-terracotta" id="btn-snapshot-3d" title="Capture High-Resolution 3D Render">
+          <span class="btn-icon">${ICONS.renderCamera}</span>
+          <span>Render 3D</span>
+        </button>
       </div>
     `;
   }
 
   private bindEvents() {
-    // Save button click
     this.container.querySelector('#btn-top-save')?.addEventListener('click', async () => {
       await autoSaveManager.forceSaveNow();
       showToast('Project saved successfully');
     });
 
-    // Status badge click to trigger save
     this.container.querySelector('#top-autosave-badge')?.addEventListener('click', async () => {
       await autoSaveManager.forceSaveNow();
       showToast('Project saved successfully');
     });
 
-    // Keyboard Ctrl+S shortcut to save
     window.addEventListener('keydown', async (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
         e.preventDefault();
@@ -141,7 +180,6 @@ export class TopBarController {
       }
     });
 
-    // Back to Dashboard with immediate auto-save
     this.container.querySelector('#btn-back-dashboard')?.addEventListener('click', async () => {
       await autoSaveManager.forceSaveNow();
       if (this.onBackToDashboard) {
@@ -149,7 +187,16 @@ export class TopBarController {
       }
     });
 
-    // Project title rename
+    // Theme toggle
+    this.container.querySelector('#btn-top-theme')?.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme') || 'dark';
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('aurabim_theme', next);
+      this.render();
+      this.bindEvents();
+    });
+
     const titleInput = this.container.querySelector('#input-project-title') as HTMLInputElement;
     titleInput?.addEventListener('change', () => {
       const val = titleInput.value.trim();
@@ -159,7 +206,6 @@ export class TopBarController {
       }
     });
 
-    // Undo / Redo
     this.container.querySelector('#btn-undo')?.addEventListener('click', () => {
       if (projectStore.undo()) showToast('Undo');
     });
@@ -167,7 +213,6 @@ export class TopBarController {
       if (projectStore.redo()) showToast('Redo');
     });
 
-    // View toggles
     this.container.querySelector('#btn-view-2d')?.addEventListener('click', () => {
       const centerViewport = document.getElementById('center-viewport');
       if (centerViewport?.classList.contains('split-screen')) {
@@ -183,19 +228,17 @@ export class TopBarController {
         document.getElementById('btn-hud-split')?.click();
       }
       projectStore.setViewMode('3d_main');
-      showToast('3D Real-Time Render View');
+      showToast('3D Render View');
     });
 
     this.container.querySelector('#btn-view-split')?.addEventListener('click', () => {
       document.getElementById('btn-hud-split')?.click();
     });
 
-    // Templates Modal
     this.container.querySelector('#btn-file-template')?.addEventListener('click', () => {
-      this.openTemplateModal();
+      openTemplateModal(this.threeScene, this.cadViewport);
     });
 
-    // Open File button & file picker
     const fileInput = this.container.querySelector('#input-file-import') as HTMLInputElement;
     this.container.querySelector('#btn-file-open')?.addEventListener('click', () => {
       fileInput?.click();
@@ -215,21 +258,19 @@ export class TopBarController {
           this.threeScene.fitToExtents();
           showToast(isAur ? `Loaded .aur Archive: "${state.name}"` : `Loaded Project: "${state.name}"`);
         } catch (err: any) {
-          await customAlert('Import Error', err.message || 'Error parsing imported project file.', { type: 'error' });
+          await customAlert('Import Error', err.message || 'Error parsing imported project file.', { isDanger: true });
         }
       };
       reader.readAsText(file);
       fileInput.value = '';
     });
 
-    // Save File (Export .aur Archive)
     this.container.querySelector('#btn-file-export')?.addEventListener('click', () => {
       const state = projectStore.getState();
       exportAsAurFile(state);
       showToast(`Exported "${state.name}".aur Archive`);
     });
 
-    // Export 2D Blueprint PNG
     this.container.querySelector('#btn-export-png')?.addEventListener('click', () => {
       const cadCanvas = document.getElementById('cad-canvas') as HTMLCanvasElement;
       if (cadCanvas) {
@@ -241,7 +282,6 @@ export class TopBarController {
       }
     });
 
-    // 3D Snapshot Render
     this.container.querySelector('#btn-snapshot-3d')?.addEventListener('click', () => {
       try {
         const dataUrl = this.threeScene.captureScreenshot();
@@ -249,13 +289,12 @@ export class TopBarController {
         link.download = `render_3d_${Date.now()}.png`;
         link.href = dataUrl;
         link.click();
-        showToast('📸 3D High-Res Render Snapshot saved!');
-      } catch (err) {
+        showToast('3D Render snapshot saved');
+      } catch {
         showToast('Could not capture 3D snapshot');
       }
     });
 
-    // Clear canvas
     this.container.querySelector('#btn-clear')?.addEventListener('click', async () => {
       const confirmed = await customConfirm(
         'Clear Entire Canvas',
@@ -268,12 +307,10 @@ export class TopBarController {
       }
     });
 
-    // Shortcuts Modal
     this.container.querySelector('#btn-shortcuts')?.addEventListener('click', () => {
-      this.openShortcutsModal();
+      openShortcutsModal();
     });
 
-    // Fullscreen toggle
     this.container.querySelector('#btn-fullscreen')?.addEventListener('click', () => {
       if (!document.fullscreenElement) {
         document.documentElement.requestFullscreen().catch(() => {});
@@ -281,14 +318,6 @@ export class TopBarController {
         document.exitFullscreen().catch(() => {});
       }
     });
-  }
-
-  private openTemplateModal() {
-    openTemplateModal(this.threeScene, this.cadViewport);
-  }
-
-  private openShortcutsModal() {
-    openShortcutsModal();
   }
 
   private updateActiveStates(viewMode: string, projectName?: string) {

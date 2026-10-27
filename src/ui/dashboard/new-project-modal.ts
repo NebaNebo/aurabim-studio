@@ -14,6 +14,8 @@ export interface NewProjectOptions {
   initialState: ProjectState;
 }
 
+import { ICONS } from '../icons';
+
 export class NewProjectModal {
   private container: HTMLElement;
   private selectedTemplate: TemplateChoice = 'blank';
@@ -51,7 +53,7 @@ export class NewProjectModal {
               <h2 class="new-proj-title" id="modal-title">Create New Project</h2>
               <p class="new-proj-subtitle">Choose a starting template or begin with a clean blank canvas.</p>
             </div>
-            <button class="new-proj-close-btn" id="btn-close-modal">✕</button>
+            <button class="new-proj-close-btn" id="btn-close-modal">${ICONS.close}</button>
           </div>
 
           <div class="new-proj-field">
@@ -62,28 +64,28 @@ export class NewProjectModal {
           <div class="template-section-label">Select Starting Template:</div>
           <div class="template-grid">
             <div class="template-card ${this.selectedTemplate === 'blank' ? 'active' : ''}" data-template="blank">
-              <div class="template-card-icon">📐</div>
+              <div class="template-card-icon">${ICONS.blueprint}</div>
               <div class="template-card-name">Blank Canvas</div>
               <div class="template-card-desc">Zero walls, clean isometric grid. Ideal for custom floor planning from scratch.</div>
               <div class="template-card-pill">0 m² · Empty</div>
             </div>
 
             <div class="template-card ${this.selectedTemplate === 'curved_penthouse' ? 'active' : ''}" data-template="curved_penthouse">
-              <div class="template-card-icon">🏙️</div>
+              <div class="template-card-icon">${ICONS.plan}</div>
               <div class="template-card-name">Curved Penthouse</div>
               <div class="template-card-desc">Luxury Coohom penthouse with curved walls, bay windows, master suite, and living room.</div>
               <div class="template-card-pill popular">★ Featured · 86 m²</div>
             </div>
 
             <div class="template-card ${this.selectedTemplate === 'two_bedroom' ? 'active' : ''}" data-template="two_bedroom">
-              <div class="template-card-icon">🏡</div>
+              <div class="template-card-icon">${ICONS.rooms}</div>
               <div class="template-card-name">Modern 2-Bedroom</div>
               <div class="template-card-desc">Open-plan kitchen, 2 bedrooms, bathroom, and balcony. Great for apartments.</div>
               <div class="template-card-pill">74 m² · Furnished</div>
             </div>
 
             <div class="template-card ${this.selectedTemplate === 'studio_loft' ? 'active' : ''}" data-template="studio_loft">
-              <div class="template-card-icon">🏢</div>
+              <div class="template-card-icon">${ICONS.wall}</div>
               <div class="template-card-name">Urban Studio Loft</div>
               <div class="template-card-desc">Compact open-concept studio apartment with partitioned living and sleeping zones.</div>
               <div class="template-card-pill">40 m² · Studio</div>
@@ -92,7 +94,7 @@ export class NewProjectModal {
 
           <div class="new-proj-footer">
             <button class="btn btn-secondary" id="btn-cancel-modal">Cancel</button>
-            <button class="btn btn-primary-emerald" id="btn-create-launch">
+            <button class="btn btn-primary-terracotta" id="btn-create-launch">
               <span>Create & Launch Studio</span>
               <span>→</span>
             </button>

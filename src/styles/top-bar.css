@@ -1,0 +1,184 @@
+/* ==========================================================================
+   AuraBIM Studio — Top Command Bar (DESIGN_SYSTEM.md Section 4.3)
+   Height: 48px, Quiet Utility Buttons, Recessed Switcher, Terracotta CTA
+   ========================================================================== */
+
+#top-command-bar {
+  height: 48px;
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  z-index: 40;
+  box-shadow: var(--shadow-card);
+}
+
+.top-bar-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.studio-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: 4px;
+  user-select: none;
+}
+
+.studio-logo-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-xs);
+  background: var(--accent-primary);
+  color: var(--text-on-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.studio-logo-name {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 14.5px;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+.studio-status-badge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--status-online);
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  padding: 1.5px 6px;
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.studio-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--status-online);
+}
+
+.project-title-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.project-title-input {
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-primary);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-xs);
+  padding: 3px 6px;
+  width: 155px;
+  transition: all 0.15s ease;
+}
+
+.project-title-input:hover {
+  border-color: var(--border-subtle);
+  background: var(--bg-surface-hover);
+}
+
+.project-title-input:focus {
+  outline: none;
+  border-color: var(--accent-telemetry);
+  background: var(--bg-input);
+  box-shadow: 0 0 0 2px var(--accent-telemetry-soft);
+}
+
+.top-bar-divider {
+  width: 1px;
+  height: 20px;
+  background: var(--border-subtle);
+  margin: 0 2px;
+}
+
+/* Quiet Utility Bar (30px ghost buttons) */
+.btn-ghost-cad {
+  height: 30px;
+  padding: 0 10px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.12s ease;
+}
+
+.btn-ghost-cad:hover {
+  background: var(--bg-surface);
+  border-color: var(--border-subtle);
+  color: var(--text-primary);
+}
+
+.btn-clear-cad:hover {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.25);
+  color: var(--status-danger);
+}
+
+/* Recessed View Switcher (32px track in --bg-input) */
+.segmented-control {
+  display: flex;
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  padding: 2px;
+  gap: 2px;
+  height: 32px;
+  align-items: center;
+}
+
+.seg-btn {
+  height: 26px;
+  padding: 0 12px;
+  font-size: 11.5px;
+  font-weight: 500;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.seg-btn:hover {
+  color: var(--text-primary);
+}
+
+.seg-btn.active {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font-weight: 600;
+  border: 1px solid var(--border-subtle);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Primary Terracotta Render 3D Button (30px) */
+#top-command-bar .btn-primary-terracotta {
+  height: 30px;
+  padding: 0 12px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+}

@@ -1,21 +1,21 @@
 /* ==========================================================================
-   AuraBIM Studio — Project Cards & Grid (Apple HIG & UI-UX Pro Max)
-   Unclipped dropdown popovers, card hover overlay, & selection checkboxes
+   AuraBIM Studio — Project Cards & Bento Grid (DESIGN_SYSTEM.md v2.0)
+   Viewport Thumbnail 190px, Glass Badges, & Monospace Meta
    ========================================================================== */
 
 .dash-projects-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
 }
 
 .dash-project-card {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: var(--radius-lg, 16px);
-  overflow: visible; /* Prevents dropdown menu clipping */
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
-  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  overflow: visible;
+  box-shadow: var(--shadow-card);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -23,29 +23,24 @@
 }
 
 .dash-project-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.09), 0 2px 6px rgba(0, 0, 0, 0.04);
-  border-color: #cbd5e1;
+  transform: translateY(-2px);
+  border-color: var(--border-strong);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
   z-index: 10;
 }
 
-.dash-project-card.menu-open {
-  z-index: 50;
-  border-color: #0071e3;
-}
-
 .dash-project-card.is-selected {
-  border-color: #1b4d3e;
-  box-shadow: 0 0 0 2.5px rgba(27, 77, 62, 0.35);
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px var(--accent-primary-soft);
 }
 
-/* Thumbnail with top corner clipping */
+/* Thumbnail Viewport (190px height) */
 .card-thumb-area {
-  height: 180px;
-  background: #f1f3f6;
+  height: 190px;
+  background: var(--bg-canvas);
   position: relative;
   overflow: hidden;
-  border-radius: 15px 15px 0 0;
+  border-radius: calc(var(--radius-lg) - 1px) calc(var(--radius-lg) - 1px) 0 0;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -56,39 +51,52 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.3s ease;
 }
 
 .dash-project-card:hover .card-thumb-img {
-  transform: scale(1.04);
+  transform: scale(1.03);
+}
+
+.card-thumb-fallback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-muted);
+}
+
+.card-thumb-fallback-text {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
 }
 
 /* Hover "Open in Studio →" Overlay */
 .card-thumb-hover-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(15, 23, 42, 0.25);
-  backdrop-filter: blur(2px);
-  -webkit-backdrop-filter: blur(2px);
+  background: rgba(13, 14, 17, 0.35);
+  backdrop-filter: blur(3px);
   display: flex;
   align-items: center;
   justify-content: center;
   opacity: 0;
-  transition: opacity 0.2s ease;
+  transition: opacity 0.16s ease;
   z-index: 6;
 }
 
 .card-thumb-hover-overlay span {
-  background: rgba(255, 255, 255, 0.96);
-  color: #1b4d3e;
-  font-size: 12px;
-  font-weight: 700;
-  padding: 8px 16px;
-  border-radius: 9999px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.16);
-  transform: translateY(4px);
-  transition: transform 0.2s ease;
-  letter-spacing: -0.01em;
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-hud);
+  border: 1px solid var(--border-subtle);
+  transform: translateY(3px);
+  transition: transform 0.16s ease;
 }
 
 .dash-project-card:hover .card-thumb-hover-overlay {
@@ -99,18 +107,40 @@
   transform: translateY(0);
 }
 
-/* Card Selection Checkbox (Top-Left) */
+/* Floating Glass Badges on Thumbnail */
+.card-badge-row {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  display: flex;
+  gap: 6px;
+  z-index: 8;
+}
+
+.card-metric-badge {
+  background: var(--bg-glass);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Selection Checkbox */
 .card-select-label {
   position: absolute;
   top: 10px;
   left: 10px;
-  z-index: 9;
+  z-index: 10;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   opacity: 0;
-  transition: opacity 0.18s ease;
+  transition: opacity 0.15s ease;
 }
 
 .dash-project-card:hover .card-select-label,
@@ -125,75 +155,39 @@
 }
 
 .card-checkbox-custom {
-  width: 22px;
-  height: 22px;
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.92);
-  border: 1.5px solid #cbd5e1;
+  width: 18px;
+  height: 18px;
+  border-radius: var(--radius-xs);
+  background: var(--bg-glass);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border-strong);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
-  transition: all 0.15s ease;
 }
 
 .card-select-checkbox:checked + .card-checkbox-custom {
-  background: #1b4d3e;
-  border-color: #1b4d3e;
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
 }
 
 .card-select-checkbox:checked + .card-checkbox-custom::after {
-  content: '✓';
-  color: #ffffff;
-  font-size: 13px;
-  font-weight: 800;
+  content: '';
+  width: 5px;
+  height: 9px;
+  border: solid #ffffff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg) translate(-1px, -1px);
 }
 
-.card-thumb-fallback {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  color: #94a3b8;
-}
-
-.card-thumb-fallback-text {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #64748b;
-}
-
-/* Apple Liquid Glass Overlay Badges */
-.card-badge-row {
-  position: absolute;
-  bottom: 10px;
-  left: 10px;
-  display: flex;
-  gap: 6px;
-  z-index: 5;
-}
-
-.card-metric-badge {
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(12px) saturate(160%);
-  -webkit-backdrop-filter: blur(12px) saturate(160%);
-  color: #1e293b;
-  font-size: 10.5px;
-  font-weight: 700;
-  padding: 3.5px 8px;
-  border-radius: 6px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  letter-spacing: -0.01em;
-}
-
+/* Card Body (padding: 14px 16px) */
 .card-body {
-  padding: 16px 18px 14px;
+  padding: 14px 16px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
+  background: var(--bg-surface);
+  border-radius: 0 0 calc(var(--radius-lg) - 1px) calc(var(--radius-lg) - 1px);
 }
 
 .card-title-row {
@@ -204,162 +198,123 @@
 }
 
 .card-title {
-  font-size: 14.5px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  color: #1d1d1f;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  cursor: pointer;
-  transition: color 0.15s ease;
   flex: 1;
   padding-right: 8px;
 }
 
-.card-title:hover {
-  color: #0071e3;
-}
-
 .card-title-input {
+  flex: 1;
   font-size: 14px;
-  font-weight: 700;
-  color: #1d1d1f;
-  border: 1px solid #0071e3;
-  border-radius: 6px;
+  font-weight: 600;
+  color: var(--text-primary);
+  background: var(--bg-input);
+  border: 1px solid var(--accent-telemetry);
+  border-radius: var(--radius-xs);
   padding: 2px 6px;
   outline: none;
-  width: 100%;
 }
 
 .card-action-btn {
   background: transparent;
   border: none;
-  font-size: 18px;
-  color: #8e8e93;
+  color: var(--text-muted);
   cursor: pointer;
-  width: 28px;
-  height: 28px;
+  padding: 4px;
+  border-radius: var(--radius-xs);
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 6px;
   transition: all 0.15s ease;
-  flex-shrink: 0;
 }
 
 .card-action-btn:hover {
-  background: #f1f5f9;
-  color: #1d1d1f;
+  background: var(--bg-surface-hover);
+  color: var(--text-primary);
 }
 
-.card-meta-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 11.5px;
-  color: #8e8e93;
-  font-weight: 500;
-}
-
-.card-meta-tag {
-  background: #f1f5f9;
-  color: #475569;
-  font-size: 10px;
-  font-weight: 600;
-  padding: 2px 6px;
-  border-radius: 4px;
-}
-
-/* Apple Floating Popover Menu (Unclipped & High z-index) */
+/* Popover Dropdown Menu */
 .card-dropdown-menu {
   position: absolute;
-  top: 36px;
+  top: 100%;
   right: 0;
-  background: rgba(255, 255, 255, 0.98);
-  backdrop-filter: blur(28px) saturate(190%);
-  -webkit-backdrop-filter: blur(28px) saturate(190%);
-  border: 1px solid rgba(226, 232, 240, 0.95);
-  border-radius: 12px;
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.16), 0 3px 10px rgba(0, 0, 0, 0.05);
-  padding: 6px;
+  width: 180px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-hud);
+  padding: 5px;
+  z-index: 100;
+  display: flex;
   flex-direction: column;
   gap: 2px;
-  z-index: 100;
-  min-width: 160px;
-  animation: dropdownIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-@keyframes dropdownIn {
-  from { opacity: 0; transform: scale(0.94) translateY(-6px); }
-  to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
 .dropdown-item {
-  background: transparent;
-  border: none;
-  padding: 8px 12px;
-  font-size: 12px;
-  font-weight: 600;
-  color: #1d1d1f;
-  border-radius: 8px;
-  cursor: pointer;
-  text-align: left;
   display: flex;
   align-items: center;
   gap: 8px;
-  transition: all 0.12s ease;
-  width: 100%;
+  padding: 7px 10px;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-primary);
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.12s ease;
 }
 
 .dropdown-item:hover {
-  background: #f1f5f9;
+  background: var(--bg-surface-hover);
 }
 
-.dropdown-item.text-danger {
-  color: #dc2626;
-}
-
-.dropdown-item.text-danger:hover {
-  background: #fee2e2;
-  color: #b91c1c;
+.dropdown-icon {
+  display: flex;
+  align-items: center;
+  color: var(--text-secondary);
 }
 
 .dropdown-divider {
   height: 1px;
-  background: #e2e8f0;
-  margin: 4px 0;
+  background: var(--border-hairline);
+  margin: 3px 0;
 }
 
-/* Empty State */
-.dash-empty-state {
-  background: #ffffff;
-  border: 1.5px dashed #cbd5e1;
-  border-radius: var(--radius-xl, 20px);
-  padding: 56px 24px;
-  text-align: center;
+.dropdown-item.text-danger {
+  color: var(--status-danger);
+}
+
+.dropdown-item.text-danger .dropdown-icon {
+  color: var(--status-danger);
+}
+
+.dropdown-item.text-danger:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* Card Metadata Row */
+.card-meta-row {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 12px;
+  justify-content: space-between;
 }
 
-.dash-empty-icon {
-  font-size: 42px;
-  line-height: 1;
+.card-meta-time {
+  font-size: 11.5px;
+  color: var(--text-secondary);
 }
 
-.dash-empty-state h3 {
-  font-size: 17px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  color: #1d1d1f;
-}
-
-.dash-empty-state p {
-  font-size: 13px;
-  color: #64748b;
-  max-width: 400px;
-  margin-bottom: 8px;
-  line-height: 1.5;
+.card-meta-tag {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
 }

@@ -1,77 +1,80 @@
 /* ==========================================================================
-   AuraBIM Studio — Spatial Metrics Banner (Apple HIG & UI-UX Pro Max)
-   Architectural hero summary, real-time counters, & live connection status
+   AuraBIM Studio — Spatial Metrics Banner (DESIGN_SYSTEM.md v2.0)
+   Tactile Architectural Bento Bar with Specular Lighting & Tabular Telemetry
    ========================================================================== */
 
 .dash-hero-banner {
-  background: linear-gradient(135deg, #ffffff 0%, #fafaf8 100%);
-  border: 1px solid #e2e8f0;
-  border-radius: var(--radius-xl, 20px);
-  padding: 28px 34px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  padding: 24px 32px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 34px;
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.03);
+  gap: 32px;
+  box-shadow: var(--shadow-card);
+}
+
+.dash-hero-left {
+  flex: 1;
 }
 
 .dash-hero-title {
-  font-size: 25px;
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  margin-bottom: 5px;
-  color: #1d1d1f;
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: -0.025em;
+  margin-bottom: 6px;
 }
 
 .dash-hero-desc {
-  font-size: 13px;
-  color: #64748b;
-  line-height: 1.45;
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  line-height: 1.5;
 }
 
 .dash-stats-group {
   display: flex;
   align-items: center;
-  gap: 26px;
+  gap: 24px;
 }
 
 .dash-stat-item {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-}
-
-.dash-stat-num {
-  font-size: 22px;
-  font-weight: 800;
-  color: #1b4d3e;
-  letter-spacing: -0.02em;
+  gap: 4px;
 }
 
 .dash-stat-label {
-  font-size: 10.5px;
+  font-family: var(--font-mono);
+  font-size: 10px;
   font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #8e8e93;
 }
 
-.dash-stat-badge {
-  font-size: 11.5px;
-  font-weight: 700;
-  color: #1b5e20;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+.dash-stat-num {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.1;
+}
+
+.dash-stat-divider {
+  width: 1px;
+  height: 38px;
+  background: var(--border-subtle);
 }
 
 .dash-pulse-dot {
-  width: 7px;
-  height: 7px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  background-color: #10b981;
-  display: inline-block;
-  box-shadow: 0 0 0 rgba(16, 185, 129, 0.4);
+  background: var(--status-online);
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
   animation: pulseDot 2s infinite;
 }
 
@@ -79,10 +82,4 @@
   0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
   70% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
   100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
-}
-
-.dash-stat-divider {
-  width: 1px;
-  height: 40px;
-  background: #e2e8f0;
 }

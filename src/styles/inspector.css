@@ -1,0 +1,91 @@
+/* ==========================================================================
+   AuraBIM Studio — Right Property Inspector (DESIGN_SYSTEM.md 4.3 & 6.2)
+   Inspector Panel: 260px width | Recessed Numeric Inputs: 28px height
+   ========================================================================== */
+
+#right-inspector {
+  width: 260px;
+  min-width: 260px;
+  background: var(--bg-panel);
+  border-left: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  z-index: 30;
+  overflow-y: auto;
+  padding: 12px;
+  gap: 12px;
+}
+
+.inspector-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: var(--shadow-card);
+}
+
+.inspector-card-title {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border-hairline);
+}
+
+.prop-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.prop-label {
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* Recessed Numeric Input (28px height - Section 6.2) */
+.prop-input-wrap {
+  position: relative;
+  width: 96px;
+  display: flex;
+  align-items: center;
+}
+
+.prop-input {
+  width: 100%;
+  height: 28px;
+  padding: 0 24px 0 8px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-input);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  outline: none;
+  transition: all 0.12s ease;
+}
+
+.prop-input:focus {
+  border-color: var(--accent-telemetry);
+  box-shadow: 0 0 0 2px var(--accent-telemetry-soft);
+}
+
+.prop-unit {
+  position: absolute;
+  right: 6px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-muted);
+  pointer-events: none;
+}

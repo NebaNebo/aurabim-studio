@@ -1,5 +1,6 @@
 import { SavedProjectItem } from '../../services/project-repository';
 import { customConfirm, customPrompt } from '../custom-dialog';
+import { ICONS } from '../icons';
 
 export interface ProjectCardCallbacks {
   onOpen: (projectId: string) => void;
@@ -17,7 +18,7 @@ export class ProjectCardRenderer {
 
     return `
       <div class="dash-project-card ${isSelected ? 'is-selected' : ''}" data-project-id="${project.id}">
-        <!-- Thumbnail Container (clipped corners) -->
+        <!-- Thumbnail Viewport (190px height) -->
         <div class="card-thumb-area" data-action="open-card">
           <!-- Selection Checkbox -->
           <label class="card-select-label ${hasAnySelection ? 'has-selection' : ''}" title="Select for bulk action">
@@ -34,7 +35,7 @@ export class ProjectCardRenderer {
             <img src="${project.thumbnailUrl}" class="card-thumb-img" alt="${project.name}" loading="lazy" />
           ` : `
             <div class="card-thumb-fallback">
-              <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                 <rect x="3" y="3" width="18" height="18" rx="2"/>
                 <path d="M3 9h18M9 21V9"/>
               </svg>
@@ -42,30 +43,47 @@ export class ProjectCardRenderer {
             </div>
           `}
           <div class="card-badge-row">
-            <span class="card-metric-badge">📐 ${project.roomCount} Rooms</span>
-            <span class="card-metric-badge">⚡ ${project.totalAreaM2} m²</span>
+            <span class="card-metric-badge">${ICONS.rooms} ${project.roomCount} Rooms</span>
+            <span class="card-metric-badge tabular-nums">${ICONS.area} ${project.totalAreaM2} m²</span>
           </div>
         </div>
 
         <div class="card-body" data-action="open-card">
           <div class="card-title-row">
             <span class="card-title" title="Click to open or double-click to rename">${project.name}</span>
-            <button class="card-action-btn" data-action="menu" title="Project options">⋮</button>
+            <button class="card-action-btn" data-action="menu" title="Project options">
+              ${ICONS.moreVertical}
+            </button>
 
-            <!-- Unclipped Apple Popover Menu -->
+            <!-- Unclipped Popover Menu -->
             <div class="card-dropdown-menu" style="display: none;">
-              <button class="dropdown-item" data-action="open">✏️ Open Studio</button>
-              <button class="dropdown-item" data-action="duplicate">📄 Duplicate</button>
-              <button class="dropdown-item" data-action="rename">🏷️ Rename</button>
-              <button class="dropdown-item" data-action="export">💾 Export .aur Project</button>
+              <button class="dropdown-item" data-action="open">
+                <span class="dropdown-icon">${ICONS.edit}</span>
+                <span>Open Studio</span>
+              </button>
+              <button class="dropdown-item" data-action="duplicate">
+                <span class="dropdown-icon">${ICONS.copy}</span>
+                <span>Duplicate</span>
+              </button>
+              <button class="dropdown-item" data-action="rename">
+                <span class="dropdown-icon">${ICONS.tag}</span>
+                <span>Rename</span>
+              </button>
+              <button class="dropdown-item" data-action="export">
+                <span class="dropdown-icon">${ICONS.exportFile}</span>
+                <span>Export .aur Archive</span>
+              </button>
               <div class="dropdown-divider"></div>
-              <button class="dropdown-item text-danger" data-action="delete">🗑️ Delete</button>
+              <button class="dropdown-item text-danger" data-action="delete">
+                <span class="dropdown-icon">${ICONS.trash}</span>
+                <span>Delete</span>
+              </button>
             </div>
           </div>
 
           <div class="card-meta-row">
             <span class="card-meta-time">Updated ${timeAgo}</span>
-            <span class="card-meta-tag">${project.wallCount} walls</span>
+            <span class="card-meta-tag">[${project.wallCount} walls]</span>
           </div>
         </div>
       </div>
@@ -99,105 +117,99 @@ export class ProjectCardRenderer {
       callbacks.onSelectToggle?.(projectId, checkbox.checked);
     });
 
-    // 3. Toggle popover menu
+    // 3. Dropdown Menu toggle
     menuBtn?.addEventListener('click', (e) => {
       e.stopPropagation();
-      const isVisible = menuDropdown?.style.display === 'flex';
-      // Close all menus
-      document.querySelectorAll('.card-dropdown-menu').forEach(m => (m as HTMLElement).style.display = 'none');
-      document.querySelectorAll('.dash-project-card').forEach(c => c.classList.remove('menu-open'));
+      if (!menuDropdown) return;
 
-      if (!isVisible && menuDropdown) {
-        menuDropdown.style.display = 'flex';
-        cardEl.classList.add('menu-open');
+      const isVisible = menuDropdown.style.display === 'block';
+      document.querySelectorAll('.card-dropdown-menu').forEach(el => (el as HTMLElement).style.display = 'none');
+
+      if (!isVisible) {
+        menuDropdown.style.display = 'block';
       }
     });
 
-    // Close menu when clicking outside
-    document.addEventListener('click', () => {
-      if (menuDropdown) menuDropdown.style.display = 'none';
-      cardEl.classList.remove('menu-open');
-    });
+    // 4. Menu actions
+    menuDropdown?.querySelectorAll('.dropdown-item').forEach(item => {
+      item.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        menuDropdown.style.display = 'none';
 
-    // 4. Popover Actions
-    menuDropdown?.querySelector('[data-action="open"]')?.addEventListener('click', (e) => {
-      e.stopPropagation();
-      menuDropdown.style.display = 'none';
-      callbacks.onOpen(projectId);
-    });
-
-    menuDropdown?.querySelector('[data-action="duplicate"]')?.addEventListener('click', (e) => {
-      e.stopPropagation();
-      menuDropdown.style.display = 'none';
-      callbacks.onDuplicate(projectId);
-    });
-
-    menuDropdown?.querySelector('[data-action="export"]')?.addEventListener('click', (e) => {
-      e.stopPropagation();
-      menuDropdown.style.display = 'none';
-      callbacks.onExport?.(projectId);
-    });
-
-    menuDropdown?.querySelector('[data-action="rename"]')?.addEventListener('click', async (e) => {
-      e.stopPropagation();
-      menuDropdown.style.display = 'none';
-      const currentName = titleEl?.textContent || 'Project';
-      const newName = await customPrompt('Rename Architectural Design', 'Enter a new title for this BIM design:', currentName);
-      if (newName && newName.trim()) {
-        callbacks.onRename(projectId, newName.trim());
-      }
-    });
-
-    menuDropdown?.querySelector('[data-action="delete"]')?.addEventListener('click', async (e) => {
-      e.stopPropagation();
-      menuDropdown.style.display = 'none';
-      const confirmed = await customConfirm('Delete Design Project', 'Are you sure you want to permanently delete this project? This action cannot be undone.', { isDanger: true });
-      if (confirmed) {
-        callbacks.onDelete(projectId);
-      }
-    });
-
-    // 5. Double-click inline renaming
-    titleEl?.addEventListener('dblclick', (e) => {
-      e.stopPropagation();
-      const currentText = titleEl.textContent || '';
-      const input = document.createElement('input');
-      input.type = 'text';
-      input.className = 'card-title-input';
-      input.value = currentText;
-      titleEl.replaceWith(input);
-      input.focus();
-      input.select();
-
-      const finishRename = () => {
-        const val = input.value.trim() || currentText;
-        input.replaceWith(titleEl);
-        titleEl.textContent = val;
-        if (val !== currentText) {
-          callbacks.onRename(projectId, val);
-        }
-      };
-
-      input.addEventListener('blur', finishRename);
-      input.addEventListener('keydown', (ke) => {
-        if (ke.key === 'Enter') {
-          ke.preventDefault();
-          finishRename();
-        } else if (ke.key === 'Escape') {
-          input.replaceWith(titleEl);
+        const action = item.getAttribute('data-action');
+        if (action === 'open') {
+          callbacks.onOpen(projectId);
+        } else if (action === 'duplicate') {
+          callbacks.onDuplicate(projectId);
+        } else if (action === 'rename') {
+          this.triggerInlineRename(cardEl, projectId, callbacks);
+        } else if (action === 'export') {
+          callbacks.onExport?.(projectId);
+        } else if (action === 'delete') {
+          const title = titleEl?.textContent || 'this project';
+          const confirmed = await customConfirm(
+            'Delete Project',
+            `Are you sure you want to permanently delete "${title}"? This cannot be undone.`,
+            { confirmText: 'Delete Project', isDanger: true }
+          );
+          if (confirmed) {
+            callbacks.onDelete(projectId);
+          }
         }
       });
     });
+
+    // 5. Double click title to inline rename
+    titleEl?.addEventListener('dblclick', (e) => {
+      e.stopPropagation();
+      this.triggerInlineRename(cardEl, projectId, callbacks);
+    });
+  }
+
+  private static triggerInlineRename(cardEl: HTMLElement, projectId: string, callbacks: ProjectCardCallbacks) {
+    const titleEl = cardEl.querySelector('.card-title') as HTMLElement | null;
+    if (!titleEl) return;
+
+    const currentName = titleEl.textContent || '';
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'card-title-input';
+    input.value = currentName;
+
+    const commitRename = () => {
+      const newName = input.value.trim();
+      if (newName && newName !== currentName) {
+        titleEl.textContent = newName;
+        callbacks.onRename(projectId, newName);
+      }
+      input.replaceWith(titleEl);
+    };
+
+    input.addEventListener('blur', commitRename);
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        input.blur();
+      } else if (e.key === 'Escape') {
+        input.value = currentName;
+        input.blur();
+      }
+    });
+
+    titleEl.replaceWith(input);
+    input.focus();
+    input.select();
   }
 
   private static formatTimeAgo(timestamp: number): string {
-    const diffMs = Date.now() - timestamp;
-    const mins = Math.floor(diffMs / (1000 * 60));
-    if (mins < 2) return 'just now';
-    if (mins < 60) return `${mins}m ago`;
-    const hours = Math.floor(mins / 60);
+    const elapsed = Date.now() - timestamp;
+    const minutes = Math.floor(elapsed / 60000);
+    const hours = Math.floor(elapsed / 3600000);
+    const days = Math.floor(elapsed / 86400000);
+
+    if (minutes < 1) return 'just now';
+    if (minutes < 60) return `${minutes}m ago`;
     if (hours < 24) return `${hours}h ago`;
-    const days = Math.floor(hours / 24);
-    return `${days}d ago`;
+    if (days < 30) return `${days}d ago`;
+    return new Date(timestamp).toLocaleDateString();
   }
 }

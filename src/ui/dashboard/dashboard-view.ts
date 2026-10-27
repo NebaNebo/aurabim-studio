@@ -6,6 +6,7 @@ import { DashboardHeaderRenderer, DashboardHeaderProps } from './dashboard-heade
 import { exportAsAurFile, parseAurOrJson } from '../../core/aur-file-system';
 import { showToast } from '../toast-notifier';
 import { customConfirm, customAlert } from '../custom-dialog';
+import { ICONS } from '../icons';
 
 export interface DashboardCallbacks {
   onOpenProject: (projectId: string) => void;
@@ -47,14 +48,12 @@ export class DashboardView {
 
   public async refresh(autoPromptNewIfEmpty: boolean = true) {
     this.projects = await projectRepository.listProjects(this.getUserId());
-
     const validIds = new Set(this.projects.map(p => p.id));
     this.selectedIds = new Set([...this.selectedIds].filter(id => validIds.has(id)));
 
     this.render();
     this.bindEvents();
 
-    // If new user with 0 projects, automatically show "Create New Project" modal
     if (this.projects.length === 0 && autoPromptNewIfEmpty && !this.searchQuery) {
       this.newProjectModal.show();
     }
@@ -74,9 +73,7 @@ export class DashboardView {
 
     for (const p of this.projects) {
       totalAreaM2 += p.totalAreaM2;
-      if (p.wallCount === 0 && p.roomCount === 0) {
-        emptyDraftCount++;
-      }
+      if (p.wallCount === 0 && p.roomCount === 0) emptyDraftCount++;
     }
     totalAreaM2 = Math.round(totalAreaM2 * 10) / 10;
     const hasSelection = this.selectedIds.size > 0;
@@ -96,17 +93,18 @@ export class DashboardView {
         <main class="dash-main">
           ${DashboardHeaderRenderer.renderHeroBanner(headerProps)}
 
-          <!-- Recent Projects Section Header & Controls -->
+          <!-- Recent Projects Bento Section -->
           <section class="dash-projects-section">
             <div class="dash-section-header">
               <h2 class="dash-section-title" id="dash-section-title">
-                Recent Projects (${filtered.length}${this.searchQuery ? ` of ${totalProjects}` : ''})
+                Recent Projects <span class="dash-count-badge tabular-nums">(${filtered.length}${this.searchQuery ? ` / ${totalProjects}` : ''})</span>
               </h2>
 
               <div class="dash-section-actions">
                 ${emptyDraftCount > 1 ? `
-                  <button class="btn-cleanup-drafts" id="btn-clean-empty-drafts" title="Clean up 0-wall drafts in one click">
-                    <span>🧹 Clean Up Empty Drafts (${emptyDraftCount})</span>
+                  <button class="btn-cleanup-drafts" id="btn-clean-empty-drafts" title="Clean up 0-wall drafts">
+                    <span class="btn-icon">${ICONS.broom}</span>
+                    <span>Clean Up Drafts (${emptyDraftCount})</span>
                   </button>
                 ` : ''}
               </div>
@@ -114,16 +112,18 @@ export class DashboardView {
 
             ${filtered.length === 0 ? `
               <div class="dash-empty-state">
-                <div class="dash-empty-icon">📐</div>
-                <h3>${this.searchQuery ? 'No matching projects found' : 'No projects created yet'}</h3>
-                <p>${this.searchQuery ? `No project names match "${this.searchQuery}". Try clearing search.` : 'Begin with a clean isometric grid or pick one of our luxury architectural templates.'}</p>
-                <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 6px;">
-                  <button class="btn-primary-emerald" id="btn-dash-empty-new">
-                    ${this.searchQuery ? 'Clear Search Filter' : '+ Create New Project'}
+                <div class="dash-empty-icon">${ICONS.blueprint}</div>
+                <h3>${this.searchQuery ? 'No matching designs found' : 'No architectural designs yet'}</h3>
+                <p>${this.searchQuery ? `No designs match "${this.searchQuery}". Try clearing search.` : 'Begin with a clean CAD viewport or explore architectural showcase templates.'}</p>
+                <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 8px;">
+                  <button class="btn-primary-terracotta" id="btn-dash-empty-new">
+                    <span class="btn-icon">${ICONS.plus}</span>
+                    <span>${this.searchQuery ? 'Clear Search Filter' : 'Create New Project'}</span>
                   </button>
                   ${!this.searchQuery ? `
-                    <button class="btn-ghost-pill" id="btn-seed-samples" style="background: #f1f5f9; border: 1px solid #cbd5e1; padding: 8px 16px; border-radius: 9999px; font-weight: 600; cursor: pointer;">
-                      <span>🏛️ Explore Sample Showcase</span>
+                    <button class="btn-ghost-pill" id="btn-seed-samples">
+                      <span class="btn-icon">${ICONS.sparkles}</span>
+                      <span>Explore Showcase</span>
                     </button>
                   ` : ''}
                 </div>
@@ -142,7 +142,10 @@ export class DashboardView {
             <span class="dash-bulk-info">${this.selectedIds.size} design${this.selectedIds.size > 1 ? 's' : ''} selected</span>
             <div class="dash-bulk-actions">
               <button class="btn-ghost-pill" id="btn-bulk-select-all">Select All</button>
-              <button class="btn-danger-pill" id="btn-bulk-delete">🗑️ Delete Selected</button>
+              <button class="btn-danger-pill" id="btn-bulk-delete">
+                <span class="btn-icon">${ICONS.trash}</span>
+                <span>Delete Selected</span>
+              </button>
               <button class="btn-ghost-pill" id="btn-bulk-cancel">Cancel</button>
             </div>
           </div>
@@ -161,7 +164,7 @@ export class DashboardView {
 
     searchInput?.addEventListener('input', (e) => {
       this.searchQuery = (e.target as HTMLInputElement).value;
-      if (clearBtn) clearBtn.style.display = this.searchQuery ? 'block' : 'none';
+      if (clearBtn) clearBtn.style.display = this.searchQuery ? 'flex' : 'none';
       this.render();
       this.bindEvents();
     });
@@ -177,7 +180,17 @@ export class DashboardView {
       this.bindEvents();
     });
 
-    // Import .aur native project archive from dashboard
+    // Theme toggle
+    this.container.querySelector('#btn-dash-theme-toggle')?.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme') || 'dark';
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('aurabim_theme', next);
+      this.render();
+      this.bindEvents();
+    });
+
+    // Import .aur native project archive
     const aurInput = this.container.querySelector('#input-dash-aur-import') as HTMLInputElement | null;
     this.container.querySelector('#btn-dash-import-aur')?.addEventListener('click', () => {
       aurInput?.click();
@@ -192,17 +205,13 @@ export class DashboardView {
         try {
           const content = evt.target?.result as string;
           const { state, isAur, meta } = parseAurOrJson(content);
-          const user = authService.getCurrentUser();
-          const userId = user ? user.uid : 'guest_local';
-
-          // Assign new ID to prevent ID collision in user's workspace
+          const userId = this.getUserId();
           state.id = `proj_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
           await projectRepository.saveProject(userId, state, meta?.thumbnailUrl, 'imported_aur');
-
           showToast(isAur ? `Imported .aur archive: "${state.name}"` : `Imported design: "${state.name}"`);
           await this.refresh();
         } catch (err: any) {
-          await customAlert('Import Error', err.message || 'Error parsing imported file.', { type: 'error' });
+          await customAlert('Import Error', err.message || 'Error parsing imported file.', { isDanger: true });
         }
       };
       reader.readAsText(file);
@@ -225,7 +234,7 @@ export class DashboardView {
 
     this.container.querySelector('#btn-seed-samples')?.addEventListener('click', async () => {
       await projectRepository.seedDefaultProjectsIfEmpty(this.getUserId());
-      showToast('Loaded 3 architectural showcase projects');
+      showToast('Loaded 3 architectural showcase designs');
       await this.refresh(false);
     });
 
@@ -235,7 +244,7 @@ export class DashboardView {
 
       const confirmed = await customConfirm(
         'Clean Up Empty Drafts',
-        `Remove ${empties.length} empty draft designs with 0 walls? This cleans up duplicate empty cards.`,
+        `Remove ${empties.length} empty draft designs with 0 walls?`,
         { isDanger: true, confirmText: 'Clean Up' }
       );
       if (confirmed) {
@@ -248,7 +257,7 @@ export class DashboardView {
       }
     });
 
-    // Bulk selection bar buttons
+    // Bulk selection buttons
     this.container.querySelector('#btn-bulk-select-all')?.addEventListener('click', () => {
       this.selectedIds = new Set(this.projects.map(p => p.id));
       this.render();
@@ -266,7 +275,7 @@ export class DashboardView {
       if (count === 0) return;
       const confirmed = await customConfirm(
         'Delete Selected Designs',
-        `Permanently delete ${count} selected project design${count > 1 ? 's' : ''}? This action cannot be undone.`,
+        `Permanently delete ${count} selected project design${count > 1 ? 's' : ''}?`,
         { isDanger: true, confirmText: 'Delete Selected' }
       );
       if (confirmed) {

@@ -1,82 +1,196 @@
-:root {
-  /* Apple Design & Book-Inspired Typography */
-  --font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", -system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-  
-  /* Book & Editorial Warm Architectural Palette (Images 1 & 2 inspired) */
-  --bg-app: #f7f7f5;
-  --bg-canvas: #f4f4f2;
-  --bg-panel: #ffffff;
-  --bg-panel-solid: #ffffff;
-  --bg-panel-secondary: #fafaf8;
-  --bg-card: #ffffff;
-  --bg-card-hover: #f5f6f8;
-  --bg-card-active: #eef2f6;
-  --bg-input: #ffffff;
-  
-  --border-subtle: #eaeae7;
-  --border-strong: #d8d8d4;
-  --border-focus: #0071e3;
-  
-  /* Text Hierarchy (Apple Ink) */
-  --text-primary: #1c1c1e;
-  --text-secondary: #52525b;
-  --text-muted: #8e8e93;
-  --text-inverse: #ffffff;
-  
-  /* Curated Book & Apple Accents */
-  --accent-emerald: #1c4e3d;       /* Forest Emerald Primary Button from Image 1 */
-  --accent-emerald-hover: #14382c;
-  --accent-emerald-light: #e8f5e9;
-  --accent-emerald-text: #1b5e20;
-  
-  --accent-blue: #0071e3;          /* Apple System Blue */
-  --accent-blue-hover: #0056b3;
-  --accent-blue-subtle: #edf5ff;
-  
-  --accent-amber: #f59e0b;         /* Warm amber draft badge */
-  --accent-amber-light: #fffbeb;
-  --accent-amber-text: #b45309;
-  
-  --accent-purple: #7c3aed;
-  --accent-cyan: #0ea5e9;
-  --accent-red: #ef4444;
-  --accent-red-light: #fee2e2;
-  
-  /* Geometry Radii */
+/* ==========================================================================
+   AuraBIM Studio — Design Tokens & Core Primitives (DESIGN_SYSTEM.md v2.0)
+   Dual-Theme: Obsidian Studio (Dark Default) & Warm Alabaster (Light)
+   ========================================================================== */
+
+:root,
+[data-theme="dark"] {
+  /* Font Stacks */
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Space Grotesk", "Outfit", sans-serif;
+  --font-mono: "JetBrains Mono", "Geist Mono", monospace;
+
+  /* Surfaces & Backgrounds (Obsidian Studio) */
+  --bg-canvas: #0d0e11;
+  --bg-shell: #111216;
+  --bg-panel: #141519;
+  --bg-surface: #1c1e24;
+  --bg-surface-hover: #242730;
+  --bg-surface-active: #2a2e39;
+  --bg-input: #0b0c0e;
+  --bg-glass: rgba(20, 21, 25, 0.78);
+
+  /* Borders & Highlights */
+  --border-hairline: #1e2028;
+  --border-subtle: #262932;
+  --border-strong: #343844;
+  --border-focus: #e05a47;
+  --highlight-top: inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
+
+  /* Elevation Shadows */
+  --shadow-card: inset 0 1px 0 0 rgba(255, 255, 255, 0.06), 0 2px 6px rgba(0, 0, 0, 0.22);
+  --shadow-hud: 0 12px 32px rgba(0, 0, 0, 0.45);
+  --shadow-input: inset 0 1px 2px rgba(0, 0, 0, 0.5);
+
+  /* Typography Colors */
+  --text-primary: #f3f4f6;
+  --text-secondary: #9ca3af;
+  --text-muted: #5e6472;
+  --text-disabled: #3e424d;
+  --text-on-accent: #ffffff;
+
+  /* Accents & Status */
+  --accent-primary: #e05a47;          /* Architectural Terracotta */
+  --accent-primary-hover: #eb6957;
+  --accent-primary-soft: rgba(224, 90, 71, 0.14);
+  --accent-telemetry: #3b82f6;        /* Electric Cobalt */
+  --accent-telemetry-soft: rgba(59, 130, 246, 0.15);
+  --status-online: #10b981;
+  --status-warning: #f59e0b;
+  --status-danger: #ef4444;
+
+  /* CAD Viewport Tokens */
+  --cad-grid-major: rgba(255, 255, 255, 0.06);
+  --cad-grid-minor: rgba(255, 255, 255, 0.02);
+  --cad-dimension: #d99b66;           /* Warm Copper */
+  --cad-wall-stroke: #f3f4f6;
+  --cad-wall-fill: #2a2e39;
+  --cad-room-fill: rgba(217, 155, 102, 0.12);
+
+  /* Radii */
   --radius-xs: 4px;
   --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  --radius-xl: 20px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 12px;
   --radius-full: 9999px;
-  
-  /* Smooth Apple Elevation Shadows */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
-  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.07), 0 2px 6px rgba(0, 0, 0, 0.04);
-  --shadow-floating: 0 16px 40px rgba(0, 0, 0, 0.1), 0 4px 12px rgba(0, 0, 0, 0.04);
-  
-  /* Glassmorphism & Micro-animations */
-  --blur-glass: blur(20px);
-  --transition-fast: 0.12s cubic-bezier(0.16, 1, 0.3, 1);
-  --transition-normal: 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+[data-theme="light"] {
+  /* Surfaces & Backgrounds (Warm Alabaster) */
+  --bg-canvas: #eae8e3;
+  --bg-shell: #f0efea;
+  --bg-panel: #f4f3ef;
+  --bg-surface: #ffffff;
+  --bg-surface-hover: #faf9f6;
+  --bg-surface-active: #f0efea;
+  --bg-input: #e6e4dd;
+  --bg-glass: rgba(244, 243, 239, 0.85);
+
+  /* Borders & Ambient Highlights */
+  --border-hairline: #e6e4dd;
+  --border-subtle: #dcdad0;
+  --border-strong: #c8c5b8;
+  --border-focus: #d94e3b;
+  --highlight-top: inset 0 1px 0 0 rgba(255, 255, 255, 0.85);
+
+  /* Elevation Shadows */
+  --shadow-card: 0 2px 5px rgba(24, 24, 27, 0.04);
+  --shadow-hud: 0 12px 28px rgba(24, 24, 27, 0.08);
+  --shadow-input: inset 0 1px 2px rgba(24, 24, 27, 0.06);
+
+  /* Typography Colors */
+  --text-primary: #18181b;
+  --text-secondary: #52525b;
+  --text-muted: #8e8e99;
+  --text-disabled: #b8b8c2;
+  --text-on-accent: #ffffff;
+
+  /* Accents & Status */
+  --accent-primary: #d94e3b;
+  --accent-primary-hover: #c4412f;
+  --accent-primary-soft: rgba(217, 78, 59, 0.10);
+  --accent-telemetry: #2563eb;
+  --accent-telemetry-soft: rgba(37, 99, 235, 0.10);
+  --status-online: #059669;
+  --status-warning: #d97706;
+  --status-danger: #dc2626;
+
+  /* CAD Viewport Tokens */
+  --cad-grid-major: rgba(24, 24, 27, 0.08);
+  --cad-grid-minor: rgba(24, 24, 27, 0.03);
+  --cad-dimension: #b4692e;
+  --cad-wall-stroke: #18181b;
+  --cad-wall-fill: #52525b;
+  --cad-room-fill: rgba(180, 105, 46, 0.12);
+}
+
+/* Global Reset & Ergonomics */
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  user-select: none;
 }
 
 body {
-  font-family: var(--font-family);
-  background-color: var(--bg-app);
+  background-color: var(--bg-canvas);
   color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  user-select: none;
   overflow: hidden;
   height: 100vh;
   width: 100vw;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Tabular Numerals for Telemetry & Inputs */
+input[type="number"],
+.tabular-nums,
+.cad-metric,
+.cad-dimension-pill {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Reusable Architectural Surface Primitives */
+.aura-panel {
+  background: var(--bg-panel);
+  border-color: var(--border-subtle);
+}
+
+.aura-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  transition: background-color 120ms ease, border-color 120ms ease;
+}
+
+.aura-card:hover {
+  background: var(--bg-surface-hover);
+  border-color: var(--border-strong);
+}
+
+.aura-card[data-active="true"] {
+  background: var(--accent-primary-soft);
+  border-color: var(--accent-primary);
+}
+
+.aura-glass-hud {
+  background: var(--bg-glass);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-hud);
+}
+
+.aura-input-recessed {
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-input);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.aura-input-recessed:focus,
+.aura-input-recessed:focus-within {
+  border-color: var(--accent-telemetry);
+  outline: none;
+  box-shadow: 0 0 0 2px var(--accent-telemetry-soft);
 }
