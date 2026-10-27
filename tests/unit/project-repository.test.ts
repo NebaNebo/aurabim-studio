@@ -94,4 +94,31 @@ describe('Project Repository (Dual-Layer Persistence)', () => {
     expect(list.length).toBe(3);
     expect(list.some(p => p.templateType === 'curved_penthouse')).toBe(true);
   });
+
+  it('strictly isolates projects between different user accounts', async () => {
+    const userA = 'user_alpha_777';
+    const userB = 'user_beta_888';
+
+    const tA = createModernStudioTemplate();
+    tA.id = 'proj_alpha_only';
+    tA.name = 'Alpha Villa';
+    await projectRepository.saveProject(userA, tA);
+
+    const tB = createModernStudioTemplate();
+    tB.id = 'proj_beta_only';
+    tB.name = 'Beta Office';
+    await projectRepository.saveProject(userB, tB);
+
+    const listA = await projectRepository.listProjects(userA);
+    const listB = await projectRepository.listProjects(userB);
+
+    expect(listA.some(p => p.id === 'proj_alpha_only')).toBe(true);
+    expect(listA.some(p => p.id === 'proj_beta_only')).toBe(false);
+
+    expect(listB.some(p => p.id === 'proj_beta_only')).toBe(true);
+    expect(listB.some(p => p.id === 'proj_alpha_only')).toBe(false);
+
+    const accessBtoA = await projectRepository.getProject(userB, 'proj_alpha_only');
+    expect(accessBtoA).toBeNull();
+  });
 });
