@@ -18,6 +18,8 @@ export class AuthModal {
     this.render();
     this.bindEvents();
     this.container.style.display = 'flex';
+    const emailInput = this.container.querySelector('#auth-email') as HTMLInputElement | null;
+    emailInput?.focus();
   }
 
   public hide() {
@@ -30,38 +32,50 @@ export class AuthModal {
     this.container.innerHTML = `
       <div class="auth-backdrop">
         <div class="auth-card" role="dialog" aria-labelledby="auth-title">
+          <button class="auth-close-btn" id="btn-close-auth" title="Dismiss modal">✕</button>
+
           <div class="auth-header">
             <div class="auth-brand">
               <span class="auth-logo-icon">🏛️</span>
-              <span class="auth-logo-text">AuraBIM Studio</span>
+              <span class="auth-logo-text" id="auth-title">AuraBIM Studio</span>
             </div>
             <p class="auth-subtitle">Real-Time 2D CAD & 3D Spatial Interior Architecture</p>
-            <div class="auth-tabs">
-              <button class="auth-tab ${isSignIn ? 'active' : ''}" id="tab-signin">Sign In</button>
-              <button class="auth-tab ${!isSignIn ? 'active' : ''}" id="tab-signup">Create Account</button>
+            <div class="auth-tabs" role="tablist">
+              <button class="auth-tab ${isSignIn ? 'active' : ''}" id="tab-signin" role="tab" aria-selected="${isSignIn}">Sign In</button>
+              <button class="auth-tab ${!isSignIn ? 'active' : ''}" id="tab-signup" role="tab" aria-selected="${!isSignIn}">Create Account</button>
             </div>
           </div>
 
-          <form class="auth-form" id="auth-form">
+          <form class="auth-form" id="auth-form" novalidate>
             ${!isSignIn ? `
               <div class="auth-field">
-                <label class="auth-label" for="auth-name">Your Full Name</label>
-                <input type="text" id="auth-name" class="auth-input" placeholder="e.g. Alex Morgan" required autocomplete="name" />
+                <div class="auth-label-row">
+                  <label class="auth-label" for="auth-name">Your Full Name</label>
+                  <span class="auth-field-error" id="err-auth-name"></span>
+                </div>
+                <input type="text" id="auth-name" class="auth-input" placeholder="e.g. Alex Morgan" autocomplete="name" />
               </div>
             ` : ''}
 
             <div class="auth-field">
-              <label class="auth-label" for="auth-email">Email Address</label>
-              <input type="email" id="auth-email" class="auth-input" placeholder="architect@aurabim.com" required autocomplete="email" />
+              <div class="auth-label-row">
+                <label class="auth-label" for="auth-email">Email Address</label>
+                <span class="auth-field-error" id="err-auth-email"></span>
+              </div>
+              <input type="email" id="auth-email" class="auth-input" placeholder="architect@aurabim.com" autocomplete="email" />
             </div>
 
             <div class="auth-field">
-              <label class="auth-label" for="auth-password">Password</label>
-              <input type="password" id="auth-password" class="auth-input" placeholder="••••••••" required minlength="6" autocomplete="${isSignIn ? 'current-password' : 'new-password'}" />
+              <div class="auth-label-row">
+                <label class="auth-label" for="auth-password">Password</label>
+                <span class="auth-field-error" id="err-auth-password"></span>
+              </div>
+              <input type="password" id="auth-password" class="auth-input" placeholder="••••••••" autocomplete="${isSignIn ? 'current-password' : 'new-password'}" />
             </div>
 
             <button type="submit" class="auth-submit-btn" id="btn-submit-auth">
-              ${isSignIn ? 'Sign In to Workspace' : 'Create Account & Open Studio'}
+              <span>${isSignIn ? 'Sign In to Workspace' : 'Create Account & Open Studio'}</span>
+              <span>→</span>
             </button>
           </form>
 
@@ -81,7 +95,7 @@ export class AuthModal {
             </button>
 
             <button class="auth-guest-btn" id="btn-guest-auth">
-              <span>🚀 Explore as Guest (Instant 1-Click Access)</span>
+              <span>🚀 Continue as Guest Designer (1-Click Instant)</span>
             </button>
           </div>
         </div>
@@ -90,10 +104,12 @@ export class AuthModal {
   }
 
   private bindEvents() {
-    // Isolate pointer events
-    ['pointerdown', 'mousedown', 'touchstart', 'click', 'dblclick', 'wheel'].forEach(evt => {
+    // Pointer Event Isolation
+    ['pointerdown', 'mousedown', 'touchstart', 'click', 'dblclick'].forEach(evt => {
       this.container.addEventListener(evt, e => e.stopPropagation());
     });
+
+    this.container.querySelector('#btn-close-auth')?.addEventListener('click', () => this.hide());
 
     this.container.querySelector('#tab-signin')?.addEventListener('click', () => {
       this.activeTab = 'signin';
@@ -110,16 +126,51 @@ export class AuthModal {
     const form = this.container.querySelector('#auth-form') as HTMLFormElement | null;
     form?.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const email = (this.container.querySelector('#auth-email') as HTMLInputElement)?.value.trim();
-      const password = (this.container.querySelector('#auth-password') as HTMLInputElement)?.value;
-      const name = (this.container.querySelector('#auth-name') as HTMLInputElement)?.value?.trim();
+      const emailInput = this.container.querySelector('#auth-email') as HTMLInputElement | null;
+      const passInput = this.container.querySelector('#auth-password') as HTMLInputElement | null;
+      const nameInput = this.container.querySelector('#auth-name') as HTMLInputElement | null;
+      const errEmail = this.container.querySelector('#err-auth-email');
+      const errPass = this.container.querySelector('#err-auth-password');
+      const errName = this.container.querySelector('#err-auth-name');
+
+      if (errEmail) errEmail.textContent = '';
+      if (errPass) errPass.textContent = '';
+      if (errName) errName.textContent = '';
+      emailInput?.classList.remove('has-error');
+      passInput?.classList.remove('has-error');
+      nameInput?.classList.remove('has-error');
+
+      const email = emailInput?.value.trim() || '';
+      const password = passInput?.value || '';
+      const name = nameInput?.value?.trim() || '';
+
+      // Client validation
+      let hasError = false;
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!email || !emailRegex.test(email)) {
+        if (errEmail) errEmail.textContent = 'Valid email required';
+        emailInput?.classList.add('has-error');
+        hasError = true;
+      }
+
+      if (password.length < 6) {
+        if (errPass) errPass.textContent = 'Min 6 characters';
+        passInput?.classList.add('has-error');
+        hasError = true;
+      }
+
+      if (this.activeTab === 'signup' && !name) {
+        if (errName) errName.textContent = 'Name required';
+        nameInput?.classList.add('has-error');
+        hasError = true;
+      }
+
+      if (hasError) return;
+
       const submitBtn = this.container.querySelector('#btn-submit-auth') as HTMLButtonElement | null;
-
-      if (!email || !password) return;
-
       if (submitBtn) {
         submitBtn.disabled = true;
-        submitBtn.textContent = this.activeTab === 'signin' ? 'Signing In...' : 'Creating Account...';
+        submitBtn.innerHTML = `<span>${this.activeTab === 'signin' ? 'Signing In...' : 'Creating Account...'}</span>`;
       }
 
       try {
@@ -138,7 +189,7 @@ export class AuthModal {
       } finally {
         if (submitBtn) {
           submitBtn.disabled = false;
-          submitBtn.textContent = this.activeTab === 'signin' ? 'Sign In to Workspace' : 'Create Account & Open Studio';
+          submitBtn.innerHTML = `<span>${this.activeTab === 'signin' ? 'Sign In to Workspace' : 'Create Account & Open Studio'}</span><span>→</span>`;
         }
       }
     });
@@ -156,7 +207,7 @@ export class AuthModal {
 
     this.container.querySelector('#btn-guest-auth')?.addEventListener('click', async () => {
       const user = await authService.signInAsGuest('Guest Architect');
-      showToast('Entered as Guest Designer. Instant cloud/local saving active.');
+      showToast('Entered as Guest Designer. Cloud/Local auto-save ready.');
       this.hide();
       this.onAuthSuccessCallback?.(user);
     });

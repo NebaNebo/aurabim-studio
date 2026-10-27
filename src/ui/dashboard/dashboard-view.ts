@@ -69,7 +69,7 @@ export class DashboardView {
 
     this.container.innerHTML = `
       <div class="dash-root">
-        <!-- Top Navigation Bar -->
+        <!-- Apple Liquid Glass Navigation Bar -->
         <header class="dash-navbar">
           <div class="dash-nav-left">
             <div class="dash-brand">
@@ -82,30 +82,32 @@ export class DashboardView {
           <div class="dash-nav-center">
             <div class="dash-search-box">
               <span class="dash-search-icon">🔍</span>
-              <input type="text" id="dash-search-input" class="dash-search-input" placeholder="Search architectural projects..." value="${this.searchQuery}" />
+              <input type="text" id="dash-search-input" class="dash-search-input" placeholder="Search architectural projects by name..." value="${this.searchQuery}" />
+              <button class="dash-search-clear" id="btn-search-clear" title="Clear search" style="${this.searchQuery ? 'display: block;' : 'display: none;'}">✕</button>
             </div>
           </div>
 
           <div class="dash-nav-right">
-            <button class="btn btn-primary-emerald" id="btn-dash-new-project">
-              <span style="font-size: 14px;">+</span>
+            <button class="btn-primary-emerald" id="btn-dash-new-project">
+              <span style="font-size: 15px; font-weight: 700;">+</span>
               <span>New Project</span>
             </button>
 
-            <div class="dash-user-badge">
+            <!-- User Profile Chip with Status -->
+            <div class="dash-user-badge" id="dash-user-chip">
               <div class="dash-avatar">${displayName.charAt(0).toUpperCase()}</div>
               <div class="dash-user-info">
                 <span class="dash-user-name">${displayName}</span>
                 <span class="dash-user-role">${user?.isGuest ? 'Guest Designer' : 'Architect'}</span>
               </div>
-              <button class="dash-signout-btn" id="btn-dash-signout" title="Sign Out">↪</button>
+              <button class="dash-signout-btn" id="btn-dash-signout" title="Sign Out of Studio">↪</button>
             </div>
           </div>
         </header>
 
-        <!-- Main Dashboard Content -->
+        <!-- Main Architectural Workspace -->
         <main class="dash-main">
-          <!-- Hero Spatial Summary Banner -->
+          <!-- Spatial Metrics Banner with Animated Status Dot -->
           <section class="dash-hero-banner">
             <div class="dash-hero-left">
               <h1 class="dash-hero-title">Welcome back, ${displayName}</h1>
@@ -114,16 +116,19 @@ export class DashboardView {
             <div class="dash-stats-group">
               <div class="dash-stat-item">
                 <span class="dash-stat-num">${totalProjects}</span>
-                <span class="dash-stat-label">Total Projects</span>
+                <span class="dash-stat-label">Total Designs</span>
               </div>
               <div class="dash-stat-divider"></div>
               <div class="dash-stat-item">
                 <span class="dash-stat-num">${totalAreaM2} m²</span>
-                <span class="dash-stat-label">Total Designed Area</span>
+                <span class="dash-stat-label">Designed Area</span>
               </div>
               <div class="dash-stat-divider"></div>
               <div class="dash-stat-item">
-                <span class="dash-stat-badge active">● Cloud Connected</span>
+                <span class="dash-stat-badge">
+                  <span class="dash-pulse-dot"></span>
+                  <span>Cloud Connected</span>
+                </span>
                 <span class="dash-stat-label">carvazon3d · uyd1vcng</span>
               </div>
             </div>
@@ -132,15 +137,19 @@ export class DashboardView {
           <!-- Recent Projects Section -->
           <section class="dash-projects-section">
             <div class="dash-section-header">
-              <h2 class="dash-section-title">Recent Projects (${filtered.length})</h2>
+              <h2 class="dash-section-title" id="dash-section-title">
+                Recent Projects (${filtered.length}${this.searchQuery ? ` of ${totalProjects}` : ''})
+              </h2>
             </div>
 
             ${filtered.length === 0 ? `
               <div class="dash-empty-state">
                 <div class="dash-empty-icon">📐</div>
-                <h3>No projects found</h3>
-                <p>Start a new project from a blank canvas or pick one of our luxury Coohom templates.</p>
-                <button class="btn btn-primary-emerald" id="btn-dash-empty-new">Create First Project</button>
+                <h3>${this.searchQuery ? 'No matching projects found' : 'No projects created yet'}</h3>
+                <p>${this.searchQuery ? `No project names match "${this.searchQuery}". Try clearing search.` : 'Begin with a clean isometric grid or pick one of our luxury architectural templates.'}</p>
+                <button class="btn-primary-emerald" id="btn-dash-empty-new">
+                  ${this.searchQuery ? 'Clear Search Filter' : 'Create First Project'}
+                </button>
               </div>
             ` : `
               <div class="dash-projects-grid" id="dash-projects-grid">
@@ -159,18 +168,24 @@ export class DashboardView {
       this.container.addEventListener(evt, e => e.stopPropagation());
     });
 
-    // Search bar
+    // Real-time instant search
     const searchInput = this.container.querySelector('#dash-search-input') as HTMLInputElement | null;
+    const clearBtn = this.container.querySelector('#btn-search-clear') as HTMLButtonElement | null;
+
     searchInput?.addEventListener('input', (e) => {
       this.searchQuery = (e.target as HTMLInputElement).value;
-      const grid = this.container.querySelector('#dash-projects-grid');
-      const filtered = this.projects.filter(p =>
-        p.name.toLowerCase().includes(this.searchQuery.toLowerCase())
-      );
-      if (grid) {
-        grid.innerHTML = filtered.map(p => ProjectCardRenderer.renderCard(p)).join('');
-        this.bindCardEvents();
+      if (clearBtn) clearBtn.style.display = this.searchQuery ? 'block' : 'none';
+      this.updateProjectGrid();
+    });
+
+    clearBtn?.addEventListener('click', () => {
+      this.searchQuery = '';
+      if (searchInput) {
+        searchInput.value = '';
+        searchInput.focus();
       }
+      clearBtn.style.display = 'none';
+      this.updateProjectGrid();
     });
 
     // New project buttons
@@ -179,7 +194,13 @@ export class DashboardView {
     });
 
     this.container.querySelector('#btn-dash-empty-new')?.addEventListener('click', () => {
-      this.newProjectModal.show();
+      if (this.searchQuery) {
+        this.searchQuery = '';
+        this.render();
+        this.bindEvents();
+      } else {
+        this.newProjectModal.show();
+      }
     });
 
     // Sign out button
@@ -190,6 +211,26 @@ export class DashboardView {
     });
 
     this.bindCardEvents();
+  }
+
+  private updateProjectGrid() {
+    const grid = this.container.querySelector('#dash-projects-grid');
+    const title = this.container.querySelector('#dash-section-title');
+    const filtered = this.projects.filter(p =>
+      p.name.toLowerCase().includes(this.searchQuery.toLowerCase())
+    );
+
+    if (title) {
+      title.textContent = `Recent Projects (${filtered.length}${this.searchQuery ? ` of ${this.projects.length}` : ''})`;
+    }
+
+    if (filtered.length === 0) {
+      this.render();
+      this.bindEvents();
+    } else if (grid) {
+      grid.innerHTML = filtered.map(p => ProjectCardRenderer.renderCard(p)).join('');
+      this.bindCardEvents();
+    }
   }
 
   private bindCardEvents() {

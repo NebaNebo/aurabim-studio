@@ -117,8 +117,17 @@ export class NewProjectModal {
       });
     });
 
-    this.container.querySelector('#btn-create-launch')?.addEventListener('click', () => {
-      const nameInput = this.container.querySelector('#new-proj-name') as HTMLInputElement | null;
+    const nameInput = this.container.querySelector('#new-proj-name') as HTMLInputElement | null;
+    const createBtn = this.container.querySelector('#btn-create-launch') as HTMLButtonElement | null;
+
+    nameInput?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        createBtn?.click();
+      }
+    });
+
+    createBtn?.addEventListener('click', () => {
       const name = nameInput?.value.trim() || 'Modern Residence';
       const newId = `proj_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
 
