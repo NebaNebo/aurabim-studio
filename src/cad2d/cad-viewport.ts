@@ -1447,7 +1447,7 @@ export class CadViewport {
         ctx.shadowBlur = 10;
         ctx.shadowOffsetY = 3;
 
-        const isDarkTheme = document.documentElement.getAttribute('data-theme') !== 'light';
+        const isDarkTheme = document.documentElement.getAttribute('data-theme') === 'dark';
 
         // Container Background
         ctx.fillStyle = isDarkTheme ? '#1c1e24' : '#ffffff';

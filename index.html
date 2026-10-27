@@ -1,10 +1,16 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AuraBIM Studio — 2D CAD & 3D Interior Design</title>
   <meta name="description" content="Next-generation browser-based 2D CAD drafting and real-time 3D interior design studio with spatial graph architecture." />
+  <script>
+    (function() {
+      var saved = localStorage.getItem('aurabim_theme');
+      document.documentElement.setAttribute('data-theme', saved || 'light');
+    })();
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">

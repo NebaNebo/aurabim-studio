@@ -10,7 +10,7 @@ export interface DashboardHeaderProps {
 
 export class DashboardHeaderRenderer {
   public static renderNavbar(props: DashboardHeaderProps): string {
-    const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
 
     return `
       <header class="dash-navbar">

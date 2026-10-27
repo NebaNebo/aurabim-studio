@@ -68,7 +68,7 @@ export class TopBarController {
 
   private render() {
     const currentState = projectStore.getState();
-    const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
 
     this.container.innerHTML = `
       <div class="top-bar-section">
@@ -189,7 +189,7 @@ export class TopBarController {
 
     // Theme toggle
     this.container.querySelector('#btn-top-theme')?.addEventListener('click', () => {
-      const current = document.documentElement.getAttribute('data-theme') || 'dark';
+      const current = document.documentElement.getAttribute('data-theme') || 'light';
       const next = current === 'dark' ? 'light' : 'dark';
       document.documentElement.setAttribute('data-theme', next);
       localStorage.setItem('aurabim_theme', next);

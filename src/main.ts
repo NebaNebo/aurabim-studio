@@ -15,6 +15,10 @@ import { DashboardView } from './ui/dashboard/dashboard-view';
 import { NewProjectOptions } from './ui/dashboard/new-project-modal';
 
 document.addEventListener('DOMContentLoaded', async () => {
+  // Ensure Light Mode is default for every account
+  const savedTheme = localStorage.getItem('aurabim_theme') || 'light';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+
   // 1. Get DOM Containers
   const authContainer = document.getElementById('auth-container')!;
   const dashboardContainer = document.getElementById('dashboard-container')!;
