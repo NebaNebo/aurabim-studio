@@ -1,6 +1,6 @@
 /* ==========================================================================
    AuraBIM Studio — Top Command Bar (DESIGN_SYSTEM.md Section 4.3)
-   Height: 48px, Quiet Utility Buttons, Recessed Switcher, Terracotta CTA
+   Height: 48px, Compact Dropdowns, Recessed Switcher, Terracotta CTA
    ========================================================================== */
 
 #top-command-bar {
@@ -99,14 +99,111 @@
   box-shadow: 0 0 0 2px var(--accent-telemetry-soft);
 }
 
-.top-bar-divider {
-  width: 1px;
-  height: 20px;
-  background: var(--border-subtle);
-  margin: 0 2px;
+/* Compact File ▾ Dropdown Menu */
+.top-file-dropdown-wrapper {
+  position: relative;
+  display: inline-flex;
 }
 
-/* Quiet Utility Bar (Compact 28px ghost buttons) */
+.file-dropdown-caret {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-left: 2px;
+  transition: transform 0.15s ease;
+}
+
+.top-file-dropdown-wrapper.open .file-dropdown-caret {
+  transform: rotate(180deg);
+}
+
+.top-file-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: 195px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  box-shadow: 0 8px 24px rgba(24, 24, 27, 0.12);
+  padding: 4px;
+  display: none;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 100;
+  backdrop-filter: blur(16px);
+}
+
+.top-file-dropdown-wrapper.open .top-file-menu {
+  display: flex;
+}
+
+.top-file-menu-item {
+  height: 32px;
+  padding: 0 10px;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  width: 100%;
+  text-align: left;
+}
+
+.top-file-menu-item:hover {
+  background: var(--bg-surface-hover);
+  color: var(--text-primary);
+}
+
+.top-file-menu-item .file-menu-icon {
+  width: 15px;
+  height: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.top-file-menu-item .file-menu-label {
+  flex: 1;
+}
+
+.top-file-menu-item .file-menu-kbd {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  color: var(--text-muted);
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: 3px;
+  padding: 1px 4px;
+}
+
+.top-file-menu-divider {
+  height: 1px;
+  background: var(--border-hairline);
+  margin: 3px 0;
+}
+
+.top-file-menu-item.file-item-danger {
+  color: var(--status-danger, #ef4444);
+}
+
+.top-file-menu-item.file-item-danger:hover {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.top-file-menu-item.file-item-danger .file-menu-icon {
+  color: var(--status-danger, #ef4444);
+}
+
+/* Quiet Utility Buttons */
 .btn-ghost-cad {
   height: 28px;
   padding: 0 8px;
@@ -128,12 +225,6 @@
   background: var(--bg-surface);
   border-color: var(--border-subtle);
   color: var(--text-primary);
-}
-
-.btn-clear-cad:hover {
-  background: rgba(239, 68, 68, 0.1);
-  border-color: rgba(239, 68, 68, 0.25);
-  color: var(--status-danger);
 }
 
 /* Recessed View Switcher (32px track in --bg-input) */
