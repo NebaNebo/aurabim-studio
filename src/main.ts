@@ -66,22 +66,33 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // 6. Initialize Dashboard View
-  const dashboardView = new DashboardView(dashboardContainer, {
-    onOpenProject: async (projectId: string) => {
-      const user = authService.getCurrentUser();
-      const userId = user ? user.uid : 'guest_local';
-      const p = await projectRepository.getProject(userId, projectId);
-      if (p) {
-        projectStore.loadProject(p.state);
-        autoSaveManager.markAsSaved(p.state);
-        cadViewport.centerView();
-        threeScene.fitToExtents();
-        router.navigateTo('editor');
+  // 6. Project In-Editor Opener Helper
+  const openProjectInEditor = async (projectId: string, announce: boolean = true): Promise<boolean> => {
+    const user = authService.getCurrentUser();
+    const userId = user ? user.uid : 'guest_local';
+    const p = await projectRepository.getProject(userId, projectId);
+    if (p) {
+      projectStore.loadProject(p.state);
+      autoSaveManager.markAsSaved(p.state);
+      router.navigateTo('editor', p.id);
+      requestAnimationFrame(() => {
         cadViewport.resizeCanvas();
         threeScene.resizeCanvas();
+        cadViewport.centerView();
+        threeScene.fitToExtents();
+      });
+      if (announce) {
         showToast(`Opened "${p.name}"`);
       }
+      return true;
+    }
+    return false;
+  };
+
+  // 7. Initialize Dashboard View
+  const dashboardView = new DashboardView(dashboardContainer, {
+    onOpenProject: async (projectId: string) => {
+      await openProjectInEditor(projectId, true);
     },
     onNewProject: async (opts: NewProjectOptions) => {
       const user = authService.getCurrentUser();
@@ -89,11 +100,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       await projectRepository.saveProject(userId, opts.initialState, undefined, opts.templateType);
       projectStore.loadProject(opts.initialState);
       autoSaveManager.markAsSaved(opts.initialState);
-      cadViewport.centerView();
-      threeScene.fitToExtents();
-      router.navigateTo('editor');
-      cadViewport.resizeCanvas();
-      threeScene.resizeCanvas();
+      router.navigateTo('editor', opts.initialState.id);
+      requestAnimationFrame(() => {
+        cadViewport.resizeCanvas();
+        threeScene.resizeCanvas();
+        cadViewport.centerView();
+        threeScene.fitToExtents();
+      });
       showToast(`Created "${opts.name}" (${opts.templateType})`);
     },
     onSignOut: async () => {
@@ -104,13 +117,39 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  // 7. Initialize Auth Modal
+  // 8. Keep active project synced with router
+  let lastActiveProjectId = '';
+  projectStore.subscribe(state => {
+    if (router.getCurrentView() === 'editor' && state.id && state.id !== lastActiveProjectId) {
+      lastActiveProjectId = state.id;
+      router.setEditorProject(state.id);
+    }
+  });
+
+  // 9. Handle browser Back / Forward URL hash changes
+  router.onRouteChange(async (route) => {
+    if (route.view === 'editor') {
+      if (route.projectId && route.projectId !== projectStore.getState().id) {
+        await openProjectInEditor(route.projectId, false);
+      } else {
+        router.navigateTo('editor', route.projectId, false);
+      }
+    } else if (route.view === 'dashboard') {
+      dashboardView.refresh();
+      router.navigateTo('dashboard', null, false);
+    } else if (route.view === 'auth') {
+      router.navigateTo('auth', null, false);
+      authModal.show('signin');
+    }
+  });
+
+  // 10. Initialize Auth Modal
   const authModal = new AuthModal(authContainer, (user: AuthUserProfile) => {
     router.navigateTo('dashboard');
     dashboardView.refresh();
   });
 
-  // 8. Auth State Router Guard
+  // 11. Auth State Router Guard
   authService.onAuthChange((user: AuthUserProfile | null) => {
     if (user) {
       if (router.getCurrentView() === 'auth') {
@@ -122,12 +161,40 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  // Initial check: if already authenticated or cached guest, show dashboard
-  if (authService.getCurrentUser()) {
-    router.navigateTo('dashboard');
-    dashboardView.refresh();
-  } else {
-    router.navigateTo('auth');
-    authModal.show('signin');
-  }
+  // 12. Initial check & Page Refresh Restorer: stay in the current page when refreshed
+  const initApp = async () => {
+    const user = authService.getCurrentUser();
+    if (!user) {
+      router.navigateTo('auth');
+      authModal.show('signin');
+      return;
+    }
+
+    const initialRoute = router.getInitialRoute();
+    if (initialRoute.view === 'editor') {
+      let loaded = false;
+      if (initialRoute.projectId) {
+        loaded = await openProjectInEditor(initialRoute.projectId, false);
+      }
+      if (!loaded) {
+        const userId = user.uid || 'guest_local';
+        const userProjects = await projectRepository.listProjects(userId);
+        if (userProjects.length > 0) {
+          loaded = await openProjectInEditor(userProjects[0].id, false);
+        }
+      }
+      if (!loaded) {
+        router.navigateTo('dashboard');
+        dashboardView.refresh();
+      }
+    } else if (initialRoute.view === 'auth') {
+      router.navigateTo('auth');
+      authModal.show('signin');
+    } else {
+      router.navigateTo('dashboard');
+      dashboardView.refresh();
+    }
+  };
+
+  await initApp();
 });
