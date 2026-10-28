@@ -48,4 +48,39 @@ describe('CAD Studio UI Polish & Refactor Verifications', () => {
     expect(projectStore.getState().activeTool).toBe('place_opening');
     expect(projectStore.getState().pendingOpeningType).toBe('single_door');
   });
+
+  it('guarantees door swing and hinge flip toggle symmetry', () => {
+    const template = createTwoBedroomSuiteTemplate();
+    projectStore.loadProject(template);
+    const state = projectStore.getState();
+
+    // Find any door in the template
+    let testWallId: string | null = null;
+    let testDoorId: string | null = null;
+    for (const wall of Object.values(state.walls)) {
+      const door = wall.openings.find(op => op.type === 'door' || op.type === 'single_door');
+      if (door) {
+        testWallId = wall.id;
+        testDoorId = door.id;
+        break;
+      }
+    }
+
+    if (testWallId && testDoorId) {
+      projectStore.updateOpening(testDoorId, { swingSide: 1, hingeSide: 'left' });
+      let op = projectStore.getState().walls[testWallId].openings.find(o => o.id === testDoorId);
+      expect(op?.swingSide).toBe(1);
+      expect(op?.hingeSide).toBe('left');
+
+      // Flip swing
+      projectStore.updateOpening(testDoorId, { swingSide: -1 });
+      op = projectStore.getState().walls[testWallId].openings.find(o => o.id === testDoorId);
+      expect(op?.swingSide).toBe(-1);
+
+      // Flip hinge
+      projectStore.updateOpening(testDoorId, { hingeSide: 'right' });
+      op = projectStore.getState().walls[testWallId].openings.find(o => o.id === testDoorId);
+      expect(op?.hingeSide).toBe('right');
+    }
+  });
 });
