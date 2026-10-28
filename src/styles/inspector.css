@@ -4,17 +4,40 @@
    ========================================================================== */
 
 #right-inspector {
-  width: 260px;
-  min-width: 260px;
+  width: 280px;
+  min-width: 280px;
+  max-width: 280px;
   background: var(--bg-panel);
   border-left: 1px solid var(--border-subtle);
   display: flex;
   flex-direction: column;
   z-index: 30;
+  overflow: hidden;
+  padding: 0;
+  gap: 0;
+  box-sizing: border-box;
+}
+
+.inspector-header {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
+  flex-shrink: 0;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.inspector-scroll-body {
+  flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
   padding: 12px;
+  display: flex;
+  flex-direction: column;
   gap: 12px;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .inspector-card {
@@ -26,6 +49,11 @@
   flex-direction: column;
   gap: 10px;
   box-shadow: var(--shadow-card);
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .inspector-card-title {
@@ -111,8 +139,12 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 30px;
+  min-height: 30px;
   gap: 8px;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .prop-label {
@@ -120,6 +152,32 @@
   font-size: 12px;
   color: #52525B;
   font-weight: 500;
+  flex-shrink: 0;
+}
+
+.prop-select {
+  height: 28px;
+  padding: 0 6px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 11px;
+  font-family: var(--font-sans);
+  outline: none;
+  flex: 1;
+  min-width: 0;
+  max-width: 155px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  box-sizing: border-box;
+  transition: border-color 0.12s ease;
+}
+
+.prop-select:focus {
+  border-color: var(--accent-primary);
+  background: #ffffff;
 }
 
 /* Recessed Numeric Input Well (width: 96px, height: 28px) */
@@ -212,4 +270,20 @@
 [data-theme="dark"] .prop-input-wrap .prop-input,
 [data-theme="dark"] .prop-input {
   color: #f4f4f5;
+}
+
+[data-theme="dark"] .inspector-header {
+  background: #18191c;
+  border-color: #2e3035;
+}
+
+[data-theme="dark"] .prop-select {
+  background: #1f2126;
+  border-color: #2e3035;
+  color: #f4f4f5;
+}
+
+[data-theme="dark"] .prop-select:focus {
+  background: #252830;
+  border-color: #D94E3B;
 }

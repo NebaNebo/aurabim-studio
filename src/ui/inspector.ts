@@ -52,17 +52,23 @@ export class InspectorController {
     }
 
     this.container.innerHTML = `
-      <div style="padding: 12px 14px 8px 14px; border-bottom: 1px solid var(--border-subtle); background: #ffffff;">
+      <div class="inspector-header">
         <div class="segmented-control" style="width: 100%;">
           <button class="seg-btn ${this.activeTab === 'properties' ? 'active' : ''}" data-itab="properties" style="flex: 1; justify-content: center;">Inspect</button>
           <button class="seg-btn ${this.activeTab === 'materials' ? 'active' : ''}" data-itab="materials" style="flex: 1; justify-content: center;">Finishes</button>
           <button class="seg-btn ${this.activeTab === 'settings' ? 'active' : ''}" data-itab="settings" style="flex: 1; justify-content: center;">Settings</button>
         </div>
       </div>
-      <div style="flex: 1; overflow-y: auto;">
+      <div class="inspector-scroll-body">
         ${contentHtml}
       </div>
     `;
+
+    this.container.scrollLeft = 0;
+    const scrollBody = this.container.querySelector('.inspector-scroll-body') as HTMLElement | null;
+    if (scrollBody) {
+      scrollBody.scrollLeft = 0;
+    }
 
     this.bindEvents(state);
   }
@@ -446,7 +452,9 @@ export class InspectorController {
         <div class="inspector-card-title">Room Label</div>
         <div class="prop-row" style="margin-bottom: 8px;">
           <span class="prop-label">Name</span>
-          <input type="text" class="prop-input" style="width: 140px; font-weight: 600;" id="room-name" value="${room.name}" />
+          <div class="prop-input-wrap" style="flex: 1; max-width: 155px; height: 28px;">
+            <input type="text" class="prop-input" style="text-align: left; padding-left: 6px; font-weight: 600;" id="room-name" value="${room.name}" />
+          </div>
         </div>
         <div style="font-size: 10px; color: var(--text-secondary); margin-bottom: 6px;">Quick Presets:</div>
         <div style="display: flex; flex-wrap: wrap; gap: 4px;">
