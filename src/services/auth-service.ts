@@ -1,6 +1,11 @@
 import { createAuthClient } from 'better-auth/client';
-import { doc, setDoc } from 'firebase/firestore';
-import { db, isCloudConnected } from './firebase-config';
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  updateProfile
+} from 'firebase/auth';
+import { auth, isCloudConnected } from './firebase-config';
+import type { AuthUserProfile } from './auth-types';
 import {
   LOCAL_USER_KEY,
   getLocalItem,
@@ -9,21 +14,19 @@ import {
   computePasswordHash,
   getRegisteredUsers,
   saveRegisteredUser,
-  seedDefaultAccountIfEmpty
+  seedDefaultAccountIfEmpty,
+  syncUserToFirebase,
+  isStaticHostingEnvironment,
+  buildGuestUser,
+  buildGoogleUser,
+  formatAuthError
 } from './auth-helpers';
 
-export interface AuthUserProfile {
-  uid: string;
-  email: string | null;
-  displayName: string | null;
-  photoURL: string | null;
-  isGuest: boolean;
-}
-
+export type { AuthUserProfile } from './auth-types';
 export { computePasswordHash } from './auth-helpers';
 
 export const authClient = createAuthClient({
-  baseURL: typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5173'
+  baseURL: typeof window !== 'undefined' ? (import.meta.env.VITE_AUTH_SERVER_URL || window.location.origin) : 'http://localhost:5173'
 });
 
 class AuthService {
@@ -49,8 +52,8 @@ class AuthService {
     // 2. Pre-seed default test account in local mirror
     seedDefaultAccountIfEmpty().catch(() => {});
 
-    // 3. Verify server session with Better-Auth if running in browser
-    if (typeof window !== 'undefined') {
+    // 3. Verify server session with Better-Auth if running in browser with a live server
+    if (typeof window !== 'undefined' && !isStaticHostingEnvironment()) {
       try {
         const sessionRes = await authClient.getSession();
         if (sessionRes?.data?.user) {
@@ -63,7 +66,7 @@ class AuthService {
             isGuest: false
           };
           setLocalItem(LOCAL_USER_KEY, JSON.stringify(this.currentUser));
-          this.syncUserToFirebase(this.currentUser);
+          syncUserToFirebase(this.currentUser);
         }
       } catch {
         // Network unavailable or static environment; maintain cached state
@@ -92,27 +95,11 @@ class AuthService {
     }
   }
 
-  private async syncUserToFirebase(user: AuthUserProfile) {
-    if (!db || !isCloudConnected || !user.uid) return;
-    try {
-      const userRef = doc(db, 'users', user.uid);
-      await setDoc(userRef, {
-        uid: user.uid,
-        email: user.email,
-        displayName: user.displayName,
-        photoURL: user.photoURL,
-        updatedAt: Date.now()
-      }, { merge: true });
-    } catch (err) {
-      console.warn('Firebase user sync note:', err);
-    }
-  }
-
   public async signInWithEmail(email: string, pass: string): Promise<AuthUserProfile> {
     const cleanEmail = email.trim().toLowerCase();
 
-    // 1. Primary: Better-Auth Server Authentication (Shared with Incognito & Browsers)
-    if (typeof window !== 'undefined') {
+    // 1. Better-Auth Server Authentication (when server endpoint is live, e.g. local dev)
+    if (typeof window !== 'undefined' && !isStaticHostingEnvironment()) {
       try {
         const res = await authClient.signIn.email({
           email: cleanEmail,
@@ -130,28 +117,60 @@ class AuthService {
           };
           this.currentUser = user;
           setLocalItem(LOCAL_USER_KEY, JSON.stringify(user));
-          this.syncUserToFirebase(user);
+          syncUserToFirebase(user);
           this.notify();
           return user;
         }
 
-        if (res.error) {
-          const msg = res.error.message || 'Incorrect email or password.';
-          throw new Error(msg);
+        const status = (res.error as any)?.status;
+        const isNotFound = status === 404 || status === 405 || status === 502 || status === 503;
+
+        if (res.error && !isNotFound) {
+          throw new Error(res.error.message || 'Incorrect email or password.');
         }
       } catch (err: any) {
-        // If server actively returned an auth error (401/403/invalid), rethrow it
-        if (err.message && !err.message.includes('Failed to fetch') && !err.message.includes('NetworkError')) {
+        if (
+          err.message &&
+          !err.message.includes('404') &&
+          !err.message.includes('Not Found') &&
+          !err.message.includes('Failed to fetch') &&
+          !err.message.includes('NetworkError')
+        ) {
           throw err;
         }
       }
     }
 
-    // 2. Fallback: Local Registry Mirror (for unit tests / offline sandbox)
+    // 2. Firebase Cloud Authentication (if cloud is connected)
+    if (auth && isCloudConnected) {
+      try {
+        const cred = await signInWithEmailAndPassword(auth, cleanEmail, pass);
+        const user: AuthUserProfile = {
+          uid: cred.user.uid,
+          email: cred.user.email,
+          displayName: cred.user.displayName || cleanEmail.split('@')[0],
+          photoURL: cred.user.photoURL,
+          isGuest: false
+        };
+        this.currentUser = user;
+        setLocalItem(LOCAL_USER_KEY, JSON.stringify(user));
+        syncUserToFirebase(user);
+        this.notify();
+        return user;
+      } catch (err: any) {
+        throw new Error(formatAuthError(err));
+      }
+    }
+
+    // 3. Fallback: Local Registry Mirror (offline sandbox, GitHub Pages client fallback, or pre-seeded accounts)
+    await seedDefaultAccountIfEmpty();
     const users = getRegisteredUsers();
     const existing = users[cleanEmail];
 
     if (!existing) {
+      if (isStaticHostingEnvironment()) {
+        throw new Error(`Account "${cleanEmail}" was not found on this deployment. Accounts created on localhost stay on your local PC. Click "Create Account" to sign up here, or click "Auto Fill" to use the Demo account.`);
+      }
       throw new Error(`No account found with email "${cleanEmail}". Please click "Create Account" first.`);
     }
 
@@ -170,7 +189,7 @@ class AuthService {
 
     this.currentUser = user;
     setLocalItem(LOCAL_USER_KEY, JSON.stringify(user));
-    this.syncUserToFirebase(user);
+    syncUserToFirebase(user);
     this.notify();
     return user;
   }
@@ -179,8 +198,8 @@ class AuthService {
     const cleanEmail = email.trim().toLowerCase();
     const displayName = name?.trim() || cleanEmail.split('@')[0];
 
-    // 1. Primary: Better-Auth Server Registration (Persists to SQLite across Incognito)
-    if (typeof window !== 'undefined') {
+    // 1. Better-Auth Server Registration (when server endpoint is live, e.g. local dev)
+    if (typeof window !== 'undefined' && !isStaticHostingEnvironment()) {
       try {
         const res = await authClient.signUp.email({
           email: cleanEmail,
@@ -199,22 +218,55 @@ class AuthService {
           };
           this.currentUser = user;
           setLocalItem(LOCAL_USER_KEY, JSON.stringify(user));
-          this.syncUserToFirebase(user);
+          syncUserToFirebase(user);
           this.notify();
           return user;
         }
 
-        if (res.error) {
+        const status = (res.error as any)?.status;
+        const isNotFound = status === 404 || status === 405 || status === 502 || status === 503;
+
+        if (res.error && !isNotFound) {
           throw new Error(res.error.message || 'Unable to create account.');
         }
       } catch (err: any) {
-        if (err.message && !err.message.includes('Failed to fetch') && !err.message.includes('NetworkError')) {
+        if (
+          err.message &&
+          !err.message.includes('404') &&
+          !err.message.includes('Not Found') &&
+          !err.message.includes('Failed to fetch') &&
+          !err.message.includes('NetworkError')
+        ) {
           throw err;
         }
       }
     }
 
-    // 2. Fallback: Local Registry Mirror (for unit tests / offline sandbox)
+    // 2. Firebase Cloud Registration (if cloud is connected)
+    if (auth && isCloudConnected) {
+      try {
+        const cred = await createUserWithEmailAndPassword(auth, cleanEmail, pass);
+        if (name && cred.user) {
+          await updateProfile(cred.user, { displayName: name });
+        }
+        const user: AuthUserProfile = {
+          uid: cred.user.uid,
+          email: cred.user.email,
+          displayName: name || cleanEmail.split('@')[0],
+          photoURL: cred.user.photoURL,
+          isGuest: false
+        };
+        this.currentUser = user;
+        setLocalItem(LOCAL_USER_KEY, JSON.stringify(user));
+        syncUserToFirebase(user);
+        this.notify();
+        return user;
+      } catch (err: any) {
+        throw new Error(formatAuthError(err));
+      }
+    }
+
+    // 3. Fallback: Local Registry Mirror (for unit tests / offline sandbox)
     const users = getRegisteredUsers();
     if (users[cleanEmail]) {
       throw new Error(`An account with email "${cleanEmail}" already exists. Please sign in instead.`);
@@ -241,36 +293,22 @@ class AuthService {
 
     this.currentUser = user;
     setLocalItem(LOCAL_USER_KEY, JSON.stringify(user));
-    this.syncUserToFirebase(user);
+    syncUserToFirebase(user);
     this.notify();
     return user;
   }
 
   public async signInWithGoogle(customEmail?: string, customName?: string): Promise<AuthUserProfile> {
-    const email = (customEmail || 'architect@gmail.com').trim().toLowerCase();
-    const name = customName || email.split('@')[0];
-    const user: AuthUserProfile = {
-      uid: `google_user_${email.replace(/[^a-z0-9]/g, '_')}`,
-      email,
-      displayName: name,
-      photoURL: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name)}&backgroundColor=0284c7`,
-      isGuest: false
-    };
+    const user = buildGoogleUser(customEmail, customName);
     this.currentUser = user;
     setLocalItem(LOCAL_USER_KEY, JSON.stringify(user));
-    this.syncUserToFirebase(user);
+    syncUserToFirebase(user);
     this.notify();
     return user;
   }
 
   public async signInAsGuest(customName: string = 'Guest Designer'): Promise<AuthUserProfile> {
-    const user: AuthUserProfile = {
-      uid: `guest_${Date.now()}`,
-      email: null,
-      displayName: customName,
-      photoURL: null,
-      isGuest: true
-    };
+    const user = buildGuestUser(customName);
     this.currentUser = user;
     setLocalItem(LOCAL_USER_KEY, JSON.stringify(user));
     this.notify();
@@ -278,7 +316,7 @@ class AuthService {
   }
 
   public async signOut(): Promise<void> {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && !isStaticHostingEnvironment()) {
       try {
         await authClient.signOut();
       } catch {

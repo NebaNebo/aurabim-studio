@@ -97,6 +97,11 @@ export class AuthModal {
                   </label>
                   <button type="button" class="auth-forgot-btn" id="btn-forgot-password">Forgot password</button>
                 </div>
+
+                <div class="auth-demo-hint-box" style="margin-top: 6px; margin-bottom: 8px; padding: 7px 10px; background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 6px; font-size: 11px; display: flex; justify-content: space-between; align-items: center; color: var(--text-secondary);">
+                  <span>Demo: <strong>architect@aurabim.com</strong></span>
+                  <button type="button" id="btn-auto-fill-demo" style="border: none; background: none; color: #2563eb; font-weight: 600; cursor: pointer; text-decoration: underline; font-size: 11px;">Auto Fill</button>
+                </div>
               ` : ''}
 
               <button type="submit" class="auth-submit-btn" id="btn-submit-auth">
@@ -141,6 +146,21 @@ export class AuthModal {
       this.activeTab = this.activeTab === 'signin' ? 'signup' : 'signin';
       this.render();
       this.bindEvents();
+    });
+
+    // Auto-fill demo credentials
+    this.container.querySelector('#btn-auto-fill-demo')?.addEventListener('click', () => {
+      const emailInput = this.container.querySelector('#auth-email') as HTMLInputElement | null;
+      const passInput = this.container.querySelector('#auth-password') as HTMLInputElement | null;
+      if (emailInput) {
+        emailInput.value = 'architect@aurabim.com';
+        emailInput.classList.remove('has-error');
+      }
+      if (passInput) {
+        passInput.value = 'architect123';
+        passInput.classList.remove('has-error');
+      }
+      showToast('Demo credentials filled: architect@aurabim.com');
     });
 
     // Password visibility toggle

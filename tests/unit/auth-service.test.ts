@@ -110,4 +110,29 @@ describe('Auth Service & Authentication Flow', () => {
     await authService.signOut();
     expect(callCount).toBe(prevCount);
   });
+
+  it('signs in with pre-seeded demo architect account without explicit signup', async () => {
+    const user = await authService.signInWithEmail('architect@aurabim.com', 'architect123');
+    expect(user.email).toBe('architect@aurabim.com');
+    expect(user.displayName).toBe('AuraBIM Architect');
+    expect(user.isGuest).toBe(false);
+  });
+
+  it('provides a clear helpful explanation when account was not found on static deployment', async () => {
+    const originalWindow = (globalThis as any).window;
+    (globalThis as any).window = {
+      location: {
+        hostname: 'nebanebo.github.io',
+        origin: 'https://nebanebo.github.io',
+        protocol: 'https:'
+      }
+    };
+
+    await expect(
+      authService.signInWithEmail('localuser@gmail.com', 'password123')
+    ).rejects.toThrow(/was not found on this deployment.*stay on your local PC/i);
+
+    (globalThis as any).window = originalWindow;
+  });
 });
+

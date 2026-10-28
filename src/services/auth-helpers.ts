@@ -1,3 +1,7 @@
+import { doc, setDoc } from 'firebase/firestore';
+import { db, isCloudConnected } from './firebase-config';
+import type { AuthUserProfile } from './auth-types';
+
 export interface RegisteredUserRecord {
   uid: string;
   email: string;
@@ -75,6 +79,52 @@ export async function seedDefaultAccountIfEmpty(): Promise<void> {
   }
 }
 
+export async function syncUserToFirebase(user: AuthUserProfile): Promise<void> {
+  if (!db || !isCloudConnected || !user.uid) return;
+  try {
+    const userRef = doc(db, 'users', user.uid);
+    await setDoc(userRef, {
+      uid: user.uid,
+      email: user.email,
+      displayName: user.displayName,
+      photoURL: user.photoURL,
+      updatedAt: Date.now()
+    }, { merge: true });
+  } catch (err) {
+    console.warn('Firebase user sync note:', err);
+  }
+}
+
+export function isStaticHostingEnvironment(): boolean {
+  if (typeof window === 'undefined') return false;
+  const host = window.location.hostname;
+  const isFile = window.location.protocol === 'file:';
+  const hasCustomServer = Boolean((import.meta as any).env?.VITE_AUTH_SERVER_URL);
+  return (host.endsWith('github.io') || isFile) && !hasCustomServer;
+}
+
+export function buildGuestUser(customName: string = 'Guest Designer'): AuthUserProfile {
+  return {
+    uid: `guest_${Date.now()}`,
+    email: null,
+    displayName: customName,
+    photoURL: null,
+    isGuest: true
+  };
+}
+
+export function buildGoogleUser(customEmail?: string, customName?: string): AuthUserProfile {
+  const email = (customEmail || 'architect@gmail.com').trim().toLowerCase();
+  const name = customName || email.split('@')[0];
+  return {
+    uid: `google_user_${email.replace(/[^a-z0-9]/g, '_')}`,
+    email,
+    displayName: name,
+    photoURL: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name)}&backgroundColor=0284c7`,
+    isGuest: false
+  };
+}
+
 export function formatAuthError(err: any): string {
   const code = err?.code || '';
   if (code === 'auth/invalid-credential' || code === 'auth/wrong-password') {
@@ -97,3 +147,4 @@ export function formatAuthError(err: any): string {
   }
   return err?.message || 'Authentication error';
 }
+
