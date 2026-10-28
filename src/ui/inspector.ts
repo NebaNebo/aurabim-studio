@@ -191,16 +191,16 @@ export class InspectorController {
           </div>
           <div class="prop-row">
             <span class="prop-label">Thickness</span>
-            <div style="display: flex; align-items: center; gap: 4px;">
+            <div class="prop-input-well">
               <input type="number" class="prop-input" id="wall-thick" value="${wall.thickness}" step="10" />
-              <span style="font-size: 10px; color: var(--text-muted);">mm</span>
+              <span class="prop-unit">mm</span>
             </div>
           </div>
           <div class="prop-row">
             <span class="prop-label">Height</span>
-            <div style="display: flex; align-items: center; gap: 4px;">
+            <div class="prop-input-well">
               <input type="number" class="prop-input" id="wall-height" value="${wall.height}" step="50" />
-              <span style="font-size: 10px; color: var(--text-muted);">mm</span>
+              <span class="prop-unit">mm</span>
             </div>
           </div>
         </div>
@@ -252,9 +252,9 @@ export class InspectorController {
         ${currentStyle !== 'sharp' ? `
           <div class="prop-row" style="margin-bottom: 8px;">
             <span class="prop-label">${currentStyle === 'fillet' ? 'Fillet Radius' : 'Chamfer Size'}</span>
-            <div style="display: flex; align-items: center; gap: 6px;">
-              <input type="number" class="prop-input" id="node-radius-input" value="${radius}" min="50" max="1500" step="50" style="width: 70px;" />
-              <span style="font-size: 10px; color: var(--text-muted);">mm</span>
+            <div class="prop-input-well">
+              <input type="number" class="prop-input" id="node-radius-input" value="${radius}" min="50" max="1500" step="50" />
+              <span class="prop-unit">mm</span>
             </div>
           </div>
           <div style="margin-bottom: 12px;">
@@ -312,23 +312,23 @@ export class InspectorController {
           </div>
           <div class="prop-row">
             <span class="prop-label">Width</span>
-            <div style="display: flex; align-items: center; gap: 4px;">
+            <div class="prop-input-well">
               <input type="number" class="prop-input" id="op-width" value="${opening.width}" step="50" />
-              <span style="font-size: 10px; color: var(--text-muted);">mm</span>
+              <span class="prop-unit">mm</span>
             </div>
           </div>
           <div class="prop-row">
             <span class="prop-label">Height</span>
-            <div style="display: flex; align-items: center; gap: 4px;">
+            <div class="prop-input-well">
               <input type="number" class="prop-input" id="op-height" value="${opening.height}" step="50" />
-              <span style="font-size: 10px; color: var(--text-muted);">mm</span>
+              <span class="prop-unit">mm</span>
             </div>
           </div>
           <div class="prop-row">
             <span class="prop-label">Sill Height</span>
-            <div style="display: flex; align-items: center; gap: 4px;">
+            <div class="prop-input-well">
               <input type="number" class="prop-input" id="op-sill" value="${opening.sillHeight}" step="50" />
-              <span style="font-size: 10px; color: var(--text-muted);">mm</span>
+              <span class="prop-unit">mm</span>
             </div>
           </div>
         </div>
@@ -350,12 +350,12 @@ export class InspectorController {
               <button class="btn btn-sm" data-door-angle="90" style="padding: 2px 6px; font-size: 10px; ${openAngle === 90 ? 'font-weight: 700; border-color: var(--accent-blue);' : ''}">Open (90°)</button>
               <button class="btn btn-sm" data-door-angle="120" style="padding: 2px 6px; font-size: 10px; ${openAngle === 120 ? 'font-weight: 700; border-color: var(--accent-blue);' : ''}">Wide (120°)</button>
             </div>
-            <div style="display: flex; gap: 6px; margin-top: 4px;">
-              <button class="btn btn-sm" id="btn-flip-swing" style="flex: 1; font-size: 10.5px;">
-                ⇋ Flip Swing (${swingSide === 1 ? 'Inward' : 'Outward'})
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 4px;">
+              <button class="btn btn-sm" id="btn-flip-swing" style="font-size: 10.5px; padding: 4px 4px; text-align: center; justify-content: center;" title="Flip Swing (${swingSide === 1 ? 'Inward' : 'Outward'})">
+                ⇋ Swing: <strong>${swingSide === 1 ? 'In' : 'Out'}</strong>
               </button>
-              <button class="btn btn-sm" id="btn-flip-hinge" style="flex: 1; font-size: 10.5px;">
-                ⇄ Flip Hinge (${hingeSide === 'left' ? 'Left' : 'Right'})
+              <button class="btn btn-sm" id="btn-flip-hinge" style="font-size: 10.5px; padding: 4px 4px; text-align: center; justify-content: center;" title="Flip Hinge (${hingeSide === 'left' ? 'Left' : 'Right'})">
+                ⇄ Hinge: <strong>${hingeSide === 'left' ? 'Left' : 'Right'}</strong>
               </button>
             </div>
           </div>
@@ -413,16 +413,16 @@ export class InspectorController {
           </div>
           <div class="prop-row">
             <span class="prop-label">Room height</span>
-            <div style="display: flex; align-items: center; gap: 4px;">
-              <input type="number" class="prop-input" id="set-room-h" value="${state.settings.wallHeight || 2800}" step="50" style="width: 65px;" />
-              <span style="font-size: 10px; color: var(--text-muted);">mm</span>
+            <div class="prop-input-well">
+              <input type="number" class="prop-input" id="set-room-h" value="${state.settings.wallHeight || 2800}" step="50" />
+              <span class="prop-unit">mm</span>
             </div>
           </div>
           <div class="prop-row">
             <span class="prop-label">Slab thickness</span>
-            <div style="display: flex; align-items: center; gap: 4px;">
-              <input type="number" class="prop-input" id="set-slab-t2" value="${state.settings.slabThickness || 120}" step="10" style="width: 65px;" />
-              <span style="font-size: 10px; color: var(--text-muted);">mm</span>
+            <div class="prop-input-well">
+              <input type="number" class="prop-input" id="set-slab-t2" value="${state.settings.slabThickness || 120}" step="10" />
+              <span class="prop-unit">mm</span>
             </div>
           </div>
         </div>
@@ -479,23 +479,23 @@ export class InspectorController {
         <div style="display: flex; flex-direction: column; gap: 8px;">
           <div class="prop-row">
             <span class="prop-label">Rotation</span>
-            <div style="display: flex; align-items: center; gap: 4px;">
+            <div class="prop-input-well">
               <input type="number" class="prop-input" id="furn-rot" value="${furn.rotation}" step="15" />
-              <span style="font-size: 10px; color: var(--text-muted);">deg</span>
+              <span class="prop-unit">deg</span>
             </div>
           </div>
           <div class="prop-row">
             <span class="prop-label">Width</span>
-            <div style="display: flex; align-items: center; gap: 4px;">
+            <div class="prop-input-well">
               <input type="number" class="prop-input" id="furn-w" value="${furn.dimensions.width}" step="50" />
-              <span style="font-size: 10px; color: var(--text-muted);">mm</span>
+              <span class="prop-unit">mm</span>
             </div>
           </div>
           <div class="prop-row">
             <span class="prop-label">Depth</span>
-            <div style="display: flex; align-items: center; gap: 4px;">
+            <div class="prop-input-well">
               <input type="number" class="prop-input" id="furn-d" value="${furn.dimensions.depth}" step="50" />
-              <span style="font-size: 10px; color: var(--text-muted);">mm</span>
+              <span class="prop-unit">mm</span>
             </div>
           </div>
           <div class="prop-row">
@@ -518,23 +518,23 @@ export class InspectorController {
         <div style="display: flex; flex-direction: column; gap: 8px;">
           <div class="prop-row">
             <span class="prop-label">Width</span>
-            <div style="display: flex; align-items: center; gap: 4px;">
+            <div class="prop-input-well">
               <input type="number" class="prop-input" id="struct-w" value="${struct.dimensions.width}" step="50" />
-              <span style="font-size: 10px; color: var(--text-muted);">mm</span>
+              <span class="prop-unit">mm</span>
             </div>
           </div>
           <div class="prop-row">
             <span class="prop-label">Length</span>
-            <div style="display: flex; align-items: center; gap: 4px;">
+            <div class="prop-input-well">
               <input type="number" class="prop-input" id="struct-l" value="${struct.dimensions.length}" step="50" />
-              <span style="font-size: 10px; color: var(--text-muted);">mm</span>
+              <span class="prop-unit">mm</span>
             </div>
           </div>
           <div class="prop-row">
             <span class="prop-label">Height</span>
-            <div style="display: flex; align-items: center; gap: 4px;">
+            <div class="prop-input-well">
               <input type="number" class="prop-input" id="struct-h" value="${struct.dimensions.height}" step="50" />
-              <span style="font-size: 10px; color: var(--text-muted);">mm</span>
+              <span class="prop-unit">mm</span>
             </div>
           </div>
           ${struct.type === 'column' ? `
@@ -549,15 +549,17 @@ export class InspectorController {
           ${struct.type === 'staircase' ? `
             <div class="prop-row">
               <span class="prop-label">Riser Count</span>
-              <input type="number" class="prop-input" id="struct-risers" value="${struct.riserCount || 16}" min="4" max="32" step="1" />
+              <div class="prop-input-well">
+                <input type="number" class="prop-input" id="struct-risers" value="${struct.riserCount || 16}" min="4" max="32" step="1" />
+              </div>
             </div>
           ` : ''}
           ${struct.type === 'flue' ? `
             <div class="prop-row">
               <span class="prop-label">Wall Thickness</span>
-              <div style="display: flex; align-items: center; gap: 4px;">
+              <div class="prop-input-well">
                 <input type="number" class="prop-input" id="struct-flue-t" value="${struct.wallThickness || 60}" step="10" />
-                <span style="font-size: 10px; color: var(--text-muted);">mm</span>
+                <span class="prop-unit">mm</span>
               </div>
             </div>
           ` : ''}

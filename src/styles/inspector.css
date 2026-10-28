@@ -12,6 +12,7 @@
   flex-direction: column;
   z-index: 30;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 12px;
   gap: 12px;
 }
@@ -157,6 +158,16 @@
   font-size: 12px;
   font-variant-numeric: tabular-nums;
   outline: none;
+}
+
+.prop-input::-webkit-outer-spin-button,
+.prop-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.prop-input[type="number"] {
+  -moz-appearance: textfield;
 }
 
 .prop-input-well .prop-unit,

@@ -291,12 +291,15 @@ export class PipController {
 
     this.roomsOverlayEl.style.display = 'flex';
     this.roomsOverlayEl.innerHTML = `
-      <div style="flex: 1; display: flex; flex-direction: column; background: #ffffff; position: relative; height: 100%;">
+      <div style="flex: 1; display: flex; flex-direction: column; background: var(--bg-surface); position: relative; height: 100%;">
         <canvas id="pip-minimap-canvas" style="flex: 1; width: 100%; height: 100%; display: block;"></canvas>
-        <div style="padding: 8px 12px 10px 12px; display: flex; justify-content: center; align-items: center; background: #ffffff;">
-          <button class="pip-display-all-btn" id="btn-pip-display-all">Display All Rooms</button>
+        <div style="padding: 8px 12px 10px 12px; display: flex; justify-content: center; align-items: center; background: var(--bg-surface); border-top: 1px solid var(--border-hairline);">
+          <button class="pip-display-all-btn" id="btn-pip-display-all">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+            <span>Display All Rooms</span>
+          </button>
         </div>
-        <div style="position: absolute; bottom: 3px; left: 5px; font-size: 11px; color: #cbd5e1; user-select: none; pointer-events: none;">╲</div>
+        <div style="position: absolute; bottom: 3px; left: 5px; font-size: 11px; color: var(--border-subtle); user-select: none; pointer-events: none;">╲</div>
       </div>
     `;
 

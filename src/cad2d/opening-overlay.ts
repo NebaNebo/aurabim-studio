@@ -59,6 +59,13 @@ export class OpeningOverlay {
   private bindEvents() {
     if (!this.leftInput || !this.centerInput || !this.rightInput || !this.toolbar) return;
 
+    // Pointer Event Isolation: prevent clicking/typing from bubbling to canvas
+    [this.leftInput, this.centerInput, this.rightInput, this.toolbar].forEach(el => {
+      el.addEventListener('pointerdown', (e) => e.stopPropagation());
+      el.addEventListener('mousedown', (e) => e.stopPropagation());
+      el.addEventListener('click', (e) => e.stopPropagation());
+    });
+
     // Track input focus so mousemove doesn't overwrite user's typing
     [this.leftInput, this.centerInput, this.rightInput].forEach(inp => {
       inp.addEventListener('focus', () => {
