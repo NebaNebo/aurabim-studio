@@ -111,15 +111,6 @@ export function renderAuthMarkup(opts: AuthTemplateOptions): string {
                 </label>
                 <button type="button" class="auth-forgot-btn" id="btn-forgot-password">Forgot password</button>
               </div>
-
-              <!-- Quick Demo Autofill Telemetry Callout -->
-              <div class="auth-demo-hint-box">
-                <div class="auth-demo-left">
-                  <span class="auth-demo-pill">DEMO</span>
-                  <span class="auth-demo-cred">architect@aurabim.com</span>
-                </div>
-                <button type="button" class="auth-demo-autofill-btn" id="btn-auto-fill-demo">Auto Fill</button>
-              </div>
             ` : ''}
 
             <button type="submit" class="auth-submit-btn" id="btn-submit-auth">
@@ -151,27 +142,6 @@ export function renderAuthMarkup(opts: AuthTemplateOptions): string {
         <div class="auth-art-column">
           <div class="auth-art-wrapper">
             <img src="${modernArchitectureUrl}" alt="AuraBIM Modern Architectural Facade" class="auth-art-image" />
-            <div class="auth-art-gradient-overlay"></div>
-
-            <!-- Top Floating Architectural Glass Badge -->
-            <div class="auth-art-floating-pill">
-              <span class="auth-pill-live-dot"></span>
-              <span class="auth-pill-title">AuraBIM Studio Engine</span>
-              <span class="auth-pill-meta">v1.0</span>
-            </div>
-
-            <!-- Bottom Floating Spatial Info Panel -->
-            <div class="auth-art-info-card">
-              <div class="auth-art-info-tag">[ ARCHITECTURAL SHOWCASE ]</div>
-              <h3 class="auth-art-info-title">Curvilinear Terraces & Biophilic Facade</h3>
-              <div class="auth-art-info-specs">
-                <span class="auth-art-spec-item">4,850 m² SPATIAL AREA</span>
-                <span class="auth-art-spec-sep">·</span>
-                <span class="auth-art-spec-item">2D & 3D REAL-TIME</span>
-                <span class="auth-art-spec-sep">·</span>
-                <span class="auth-art-spec-item">CLOUD SYNCED</span>
-              </div>
-            </div>
           </div>
         </div>
 

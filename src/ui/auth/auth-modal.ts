@@ -100,22 +100,7 @@ export class AuthModal {
       this.bindEvents();
     });
 
-    // 5. Auto-Fill Demo Credentials
-    this.container.querySelector('#btn-auto-fill-demo')?.addEventListener('click', () => {
-      const emailInput = this.container.querySelector('#auth-email') as HTMLInputElement | null;
-      const passInput = this.container.querySelector('#auth-password') as HTMLInputElement | null;
-      if (emailInput) {
-        emailInput.value = 'architect@aurabim.com';
-        emailInput.classList.remove('has-error');
-      }
-      if (passInput) {
-        passInput.value = 'architect123';
-        passInput.classList.remove('has-error');
-      }
-      showToast('Demo credentials filled: architect@aurabim.com');
-    });
-
-    // 6. Password Visibility Toggle
+    // 5. Password Visibility Toggle
     this.container.querySelector('#btn-toggle-password')?.addEventListener('click', () => {
       this.showPassword = !this.showPassword;
       const passInput = this.container.querySelector('#auth-password') as HTMLInputElement | null;

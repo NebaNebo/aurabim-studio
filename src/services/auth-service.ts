@@ -180,7 +180,7 @@ class AuthService {
 
     if (!existing) {
       if (isStaticHostingEnvironment()) {
-        throw new Error(`Account "${cleanEmail}" was not found on this deployment. Accounts created on localhost stay on your local PC. Click "Create Account" to sign up here, or click "Auto Fill" to use the Demo account.`);
+        throw new Error(`Account "${cleanEmail}" was not found on this deployment. Accounts created on localhost stay on your local PC. Click "Create Account" to sign up here.`);
       }
       throw new Error(`No account found with email "${cleanEmail}". Please click "Create Account" first.`);
     }
