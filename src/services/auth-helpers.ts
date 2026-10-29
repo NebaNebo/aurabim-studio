@@ -1,6 +1,11 @@
 import { doc, setDoc } from 'firebase/firestore';
 import { db, isCloudConnected } from './firebase-config';
 import type { AuthUserProfile } from './auth-types';
+import {
+  fetchCloudUserRegistry,
+  uploadCloudUserRegistry,
+  mergeRegistries
+} from './cloud-auth-registry';
 
 export interface RegisteredUserRecord {
   uid: string;
@@ -62,6 +67,22 @@ export function saveRegisteredUser(record: RegisteredUserRecord): void {
   const users = getRegisteredUsers();
   users[record.email.toLowerCase()] = record;
   setLocalItem(REGISTERED_USERS_KEY, JSON.stringify(users));
+  // Cross-device sync: upload registry to Cloudinary so any device can sign in
+  uploadCloudUserRegistry(users).catch(() => {});
+}
+
+/**
+ * Synchronizes local user registry with the global cloud registry
+ */
+export async function syncUsersWithCloudRegistry(): Promise<Record<string, RegisteredUserRecord>> {
+  const localUsers = getRegisteredUsers();
+  const cloudUsers = await fetchCloudUserRegistry();
+  const { merged, hasNewLocal } = mergeRegistries(localUsers, cloudUsers);
+  setLocalItem(REGISTERED_USERS_KEY, JSON.stringify(merged));
+  if (hasNewLocal) {
+    uploadCloudUserRegistry(merged).catch(() => {});
+  }
+  return merged;
 }
 
 export async function seedDefaultAccountIfEmpty(): Promise<void> {
@@ -95,12 +116,19 @@ export async function syncUserToFirebase(user: AuthUserProfile): Promise<void> {
   }
 }
 
+/**
+ * Returns true when the app is running on a deployed host (Vercel, GitHub Pages,
+ * Netlify, etc.) where the Better-Auth Vite dev-server plugin is NOT available.
+ * Better-Auth's Node server only runs on localhost via the Vite plugin.
+ */
 export function isStaticHostingEnvironment(): boolean {
   if (typeof window === 'undefined') return false;
-  const host = window.location.hostname;
-  const isFile = window.location.protocol === 'file:';
+  // An explicit auth server URL means we have a dedicated backend
   const hasCustomServer = Boolean((import.meta as any).env?.VITE_AUTH_SERVER_URL);
-  return (host.endsWith('github.io') || isFile) && !hasCustomServer;
+  if (hasCustomServer) return false;
+  const host = window.location.hostname;
+  // Better-Auth only runs on localhost/127.0.0.1 via Vite plugin
+  return host !== 'localhost' && host !== '127.0.0.1';
 }
 
 export function buildGuestUser(customName: string = 'Guest Designer'): AuthUserProfile {

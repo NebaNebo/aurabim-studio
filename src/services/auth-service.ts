@@ -15,6 +15,7 @@ import {
   getRegisteredUsers,
   saveRegisteredUser,
   seedDefaultAccountIfEmpty,
+  syncUsersWithCloudRegistry,
   syncUserToFirebase,
   isStaticHostingEnvironment,
   buildGuestUser,
@@ -49,8 +50,9 @@ class AuthService {
       }
     }
 
-    // 2. Pre-seed default test account in local mirror
+    // 2. Pre-seed default test account & sync cloud registry for cross-device access
     seedDefaultAccountIfEmpty().catch(() => {});
+    syncUsersWithCloudRegistry().catch(() => {});
 
     // 3. Verify server session with Better-Auth if running in browser with a live server
     if (typeof window !== 'undefined' && !isStaticHostingEnvironment()) {
@@ -162,10 +164,19 @@ class AuthService {
       }
     }
 
-    // 3. Fallback: Local Registry Mirror (offline sandbox, GitHub Pages client fallback, or pre-seeded accounts)
+    // 3. Fallback: Cloud & Local Registry Mirror (cross-device persistent accounts)
     await seedDefaultAccountIfEmpty();
-    const users = getRegisteredUsers();
-    const existing = users[cleanEmail];
+    let users = getRegisteredUsers();
+    let existing = users[cleanEmail];
+
+    if (!existing) {
+      try {
+        const cloudUsers = await syncUsersWithCloudRegistry();
+        existing = cloudUsers[cleanEmail];
+      } catch {
+        // offline fallback
+      }
+    }
 
     if (!existing) {
       if (isStaticHostingEnvironment()) {
@@ -266,7 +277,12 @@ class AuthService {
       }
     }
 
-    // 3. Fallback: Local Registry Mirror (for unit tests / offline sandbox)
+    // 3. Cloud & Local Registry Mirror (cross-device persistence)
+    try {
+      await syncUsersWithCloudRegistry();
+    } catch {
+      // offline fallback
+    }
     const users = getRegisteredUsers();
     if (users[cleanEmail]) {
       throw new Error(`An account with email "${cleanEmail}" already exists. Please sign in instead.`);
