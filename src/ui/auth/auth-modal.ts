@@ -1,11 +1,12 @@
+/**
+ * AuraBIM Studio — Auth Page Controller
+ * Aligned with Dashboard Design Language (DESIGN_SYSTEM.md)
+ */
+
 import { authService, AuthUserProfile } from '../../services/auth-service';
 import { showToast } from '../toast-notifier';
 import { customPrompt, customAlert } from '../custom-dialog';
-import { ICONS } from '../icons';
-import flutedGlassUrl from '../../assets/auth/fluted_glass_texture.jpg';
-
-const EYE_OPEN_SVG = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>`;
-const EYE_OFF_SVG = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>`;
+import { renderAuthMarkup, EYE_OPEN_SVG, EYE_OFF_SVG } from './auth-template';
 
 export class AuthModal {
   private container: HTMLElement;
@@ -35,112 +36,63 @@ export class AuthModal {
   }
 
   private render() {
-    const isSignIn = this.activeTab === 'signin';
-
-    this.container.innerHTML = `
-      <div class="auth-backdrop">
-        <div class="auth-split-card" role="dialog" aria-labelledby="auth-title">
-          <button class="auth-close-btn" id="btn-close-auth" title="Dismiss modal">${ICONS.close}</button>
-
-          <!-- Left Form Column -->
-          <div class="auth-form-column">
-            <div class="auth-header">
-              <h2 class="auth-title" id="auth-title">${isSignIn ? 'Welcome back' : 'Create an account'}</h2>
-              <p class="auth-subtitle">
-                ${isSignIn ? 'Welcome back! Please enter your details.' : 'Start your 3D spatial interior design journey today.'}
-              </p>
-            </div>
-
-            <form class="auth-form" id="auth-form" novalidate>
-              ${!isSignIn ? `
-                <div class="auth-field">
-                  <div class="auth-label-row">
-                    <label class="auth-label" for="auth-name">Name</label>
-                    <span class="auth-field-error" id="err-auth-name"></span>
-                  </div>
-                  <input type="text" id="auth-name" class="auth-input" placeholder="Enter your full name" autocomplete="name" />
-                </div>
-              ` : ''}
-
-              <div class="auth-field">
-                <div class="auth-label-row">
-                  <label class="auth-label" for="auth-email">Email</label>
-                  <span class="auth-field-error" id="err-auth-email"></span>
-                </div>
-                <input type="email" id="auth-email" class="auth-input" placeholder="Enter your email" autocomplete="email" />
-              </div>
-
-              <div class="auth-field">
-                <div class="auth-label-row">
-                  <label class="auth-label" for="auth-password">Password</label>
-                  <span class="auth-field-error" id="err-auth-password"></span>
-                </div>
-                <div class="auth-input-wrapper">
-                  <input
-                    type="${this.showPassword ? 'text' : 'password'}"
-                    id="auth-password"
-                    class="auth-input has-toggle"
-                    placeholder="••••••••"
-                    autocomplete="${isSignIn ? 'current-password' : 'new-password'}"
-                  />
-                  <button type="button" class="auth-password-toggle" id="btn-toggle-password" title="Toggle password visibility" aria-label="Toggle password visibility">
-                    ${this.showPassword ? EYE_OFF_SVG : EYE_OPEN_SVG}
-                  </button>
-                </div>
-              </div>
-
-              ${isSignIn ? `
-                <div class="auth-options-row">
-                  <label class="auth-remember-label">
-                    <input type="checkbox" id="auth-remember" class="auth-checkbox" checked />
-                    <span>Remember for 30 days</span>
-                  </label>
-                  <button type="button" class="auth-forgot-btn" id="btn-forgot-password">Forgot password</button>
-                </div>
-
-                <div class="auth-demo-hint-box" style="margin-top: 6px; margin-bottom: 8px; padding: 7px 10px; background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 6px; font-size: 11px; display: flex; justify-content: space-between; align-items: center; color: var(--text-secondary);">
-                  <span>Demo: <strong>architect@aurabim.com</strong></span>
-                  <button type="button" id="btn-auto-fill-demo" style="border: none; background: none; color: #2563eb; font-weight: 600; cursor: pointer; text-decoration: underline; font-size: 11px;">Auto Fill</button>
-                </div>
-              ` : ''}
-
-              <button type="submit" class="auth-submit-btn" id="btn-submit-auth">
-                <span>${isSignIn ? 'Sign in' : 'Create account'}</span>
-              </button>
-            </form>
-
-            <div class="auth-footer-prompt">
-              <span>${isSignIn ? "Don't have an account?" : "Already have an account?"}</span>
-              <button type="button" class="auth-link-btn" id="btn-switch-mode">
-                ${isSignIn ? 'Sign up for free' : 'Log in'}
-              </button>
-            </div>
-
-            <div class="auth-guest-row">
-              <button type="button" class="auth-guest-link" id="btn-guest-auth">
-                Continue as Guest Architect →
-              </button>
-            </div>
-          </div>
-
-          <!-- Right Art Panel Column -->
-          <div class="auth-art-column">
-            <div class="auth-art-wrapper">
-              <img src="${flutedGlassUrl}" alt="AuraBIM Fluted Glass Panel" class="auth-art-image" />
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+    this.container.innerHTML = renderAuthMarkup({
+      activeTab: this.activeTab,
+      showPassword: this.showPassword,
+      currentTheme
+    });
   }
 
   private bindEvents() {
-    // Pointer Event Isolation
+    // 1. Pointer Event Isolation: Never leak clicks or drags to CAD canvas underneath
     ['pointerdown', 'mousedown', 'touchstart', 'click', 'dblclick'].forEach(evt => {
       this.container.addEventListener(evt, e => e.stopPropagation());
     });
 
-    this.container.querySelector('#btn-close-auth')?.addEventListener('click', () => this.hide());
+    // 2. Dismiss / Close button
+    this.container.querySelector('#btn-close-auth')?.addEventListener('click', () => {
+      const user = authService.getCurrentUser();
+      if (!user) {
+        // If not logged in, enter as guest instead of showing a blank canvas
+        authService.signInAsGuest('Guest Architect').then(guest => {
+          showToast('Entered workspace as Guest Architect');
+          this.hide();
+          this.onAuthSuccessCallback?.(guest);
+        });
+      } else {
+        this.hide();
+      }
+    });
+
+    // 3. Theme Toggle Button
+    this.container.querySelector('#btn-auth-theme')?.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme') || 'light';
+      const nextTheme = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', nextTheme);
+      try {
+        localStorage.setItem('aurabim_theme', nextTheme);
+      } catch {}
+      this.render();
+      this.bindEvents();
+    });
+
+    // 4. Segmented Control Switcher
+    this.container.querySelector('#tab-auth-signin')?.addEventListener('click', () => {
+      if (this.activeTab !== 'signin') {
+        this.activeTab = 'signin';
+        this.render();
+        this.bindEvents();
+      }
+    });
+
+    this.container.querySelector('#tab-auth-signup')?.addEventListener('click', () => {
+      if (this.activeTab !== 'signup') {
+        this.activeTab = 'signup';
+        this.render();
+        this.bindEvents();
+      }
+    });
 
     this.container.querySelector('#btn-switch-mode')?.addEventListener('click', () => {
       this.activeTab = this.activeTab === 'signin' ? 'signup' : 'signin';
@@ -148,7 +100,7 @@ export class AuthModal {
       this.bindEvents();
     });
 
-    // Auto-fill demo credentials
+    // 5. Auto-Fill Demo Credentials
     this.container.querySelector('#btn-auto-fill-demo')?.addEventListener('click', () => {
       const emailInput = this.container.querySelector('#auth-email') as HTMLInputElement | null;
       const passInput = this.container.querySelector('#auth-password') as HTMLInputElement | null;
@@ -163,7 +115,7 @@ export class AuthModal {
       showToast('Demo credentials filled: architect@aurabim.com');
     });
 
-    // Password visibility toggle
+    // 6. Password Visibility Toggle
     this.container.querySelector('#btn-toggle-password')?.addEventListener('click', () => {
       this.showPassword = !this.showPassword;
       const passInput = this.container.querySelector('#auth-password') as HTMLInputElement | null;
@@ -176,7 +128,7 @@ export class AuthModal {
       }
     });
 
-    // Forgot password handler
+    // 7. Forgot Password Dialog
     this.container.querySelector('#btn-forgot-password')?.addEventListener('click', async () => {
       const emailInput = this.container.querySelector('#auth-email') as HTMLInputElement | null;
       const currentEmail = emailInput?.value?.trim() || '';
@@ -194,7 +146,7 @@ export class AuthModal {
       }
     });
 
-    // Guest sign in
+    // 8. Guest Sign-In
     this.container.querySelector('#btn-guest-auth')?.addEventListener('click', async () => {
       const user = await authService.signInAsGuest('Guest Architect');
       showToast('Entered as Guest Architect.');
@@ -202,7 +154,7 @@ export class AuthModal {
       this.onAuthSuccessCallback?.(user);
     });
 
-    // Form submit
+    // 9. Form Submission
     const form = this.container.querySelector('#auth-form') as HTMLFormElement | null;
     form?.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -224,7 +176,6 @@ export class AuthModal {
       const password = passInput?.value || '';
       const name = nameInput?.value?.trim() || '';
 
-      // Client validation
       let hasError = false;
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!email || !emailRegex.test(email)) {
@@ -282,29 +233,19 @@ export class AuthModal {
       } finally {
         if (submitBtn) {
           submitBtn.disabled = false;
-          submitBtn.innerHTML = `<span>${this.activeTab === 'signin' ? 'Sign in' : 'Create account'}</span>`;
+          submitBtn.innerHTML = `<span>${this.activeTab === 'signin' ? 'Sign In to Studio' : 'Create Free Account'}</span>`;
         }
       }
     });
 
-    // Clear field errors as user types
-    const emailEl = this.container.querySelector('#auth-email') as HTMLInputElement | null;
-    const passEl = this.container.querySelector('#auth-password') as HTMLInputElement | null;
-    const nameEl = this.container.querySelector('#auth-name') as HTMLInputElement | null;
-    emailEl?.addEventListener('input', () => {
-      emailEl.classList.remove('has-error');
-      const err = this.container.querySelector('#err-auth-email');
-      if (err) err.textContent = '';
-    });
-    passEl?.addEventListener('input', () => {
-      passEl.classList.remove('has-error');
-      const err = this.container.querySelector('#err-auth-password');
-      if (err) err.textContent = '';
-    });
-    nameEl?.addEventListener('input', () => {
-      nameEl.classList.remove('has-error');
-      const err = this.container.querySelector('#err-auth-name');
-      if (err) err.textContent = '';
+    // 10. Clear field error states on user typing
+    ['auth-email', 'auth-password', 'auth-name'].forEach(id => {
+      const el = this.container.querySelector(`#${id}`) as HTMLInputElement | null;
+      el?.addEventListener('input', () => {
+        el.classList.remove('has-error');
+        const err = this.container.querySelector(`#err-${id}`);
+        if (err) err.textContent = '';
+      });
     });
   }
 }
